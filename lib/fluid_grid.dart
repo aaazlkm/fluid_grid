@@ -1,0 +1,13 @@
+/// A sectioned, reorderable, implicitly animated masonry grid.
+///
+/// Items are laid out in a masonry (shortest-column) grid, grouped into
+/// sections that may carry a header and a footer. Items animate to their
+/// positions with springs, and can be dragged to reorder — including across
+/// section boundaries.
+///
+/// With a `GridZoomConfig`, a two-finger pinch morphs the grid continuously
+/// between column counts, iOS-Photos style, keeping the content under the
+/// fingers in place and settling to the nearest count on release.
+library;
+
+export 'src/model/grid_springs.dart' show GridSprings;

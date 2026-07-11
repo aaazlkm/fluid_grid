@@ -1,0 +1,109 @@
+import 'package:fluid_grid/src/animation/spring_value.dart';
+import 'package:fluid_grid/src/model/grid_springs.dart';
+import 'package:flutter/physics.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+const SpringDescription _spring = GridSprings.defaultReflow;
+const double _dt = 1 / 60;
+
+/// Runs the spring until it comes to rest, returning the frames it took.
+int settle(SpringValue value, {int maxFrames = 600}) {
+  var frames = 0;
+  while (value.tick(_dt)) {
+    frames++;
+    if (frames > maxFrames) fail('spring did not settle within $maxFrames frames');
+  }
+  return frames;
+}
+
+void main() {
+  test('starts at rest', () {
+    final value = SpringValue(5)..tick(_dt);
+    expect(value.value, 5);
+    expect(value.isAnimating, isFalse);
+  });
+
+  test('jumpTo moves immediately and cancels motion', () {
+    final value = SpringValue(0)
+      ..retarget(100, _spring)
+      ..tick(_dt)
+      ..jumpTo(42);
+
+    expect(value.value, 42);
+    expect(value.target, 42);
+    expect(value.velocity, 0);
+    expect(value.isAnimating, isFalse);
+  });
+
+  test('converges on its target and stops', () {
+    final value = SpringValue(0)..retarget(100, _spring);
+    expect(value.isAnimating, isTrue);
+
+    settle(value);
+
+    expect(value.value, 100);
+    expect(value.velocity, 0);
+    expect(value.isAnimating, isFalse);
+  });
+
+  test('a retarget within tolerance snaps rather than animating', () {
+    final value = SpringValue(0)..retarget(0.01, _spring);
+    expect(value.isAnimating, isFalse);
+    expect(value.value, 0.01);
+  });
+
+  test('retargeting to the same value does not restart the simulation', () {
+    final value = SpringValue(0)..retarget(100, _spring);
+    for (var i = 0; i < 10; i++) {
+      value.tick(_dt);
+    }
+    final midway = value.value;
+
+    value.retarget(100, _spring);
+    expect(value.value, midway);
+  });
+
+  test('a mid-flight retarget is continuous in position and keeps velocity', () {
+    final value = SpringValue(0)..retarget(100, _spring);
+    for (var i = 0; i < 10; i++) {
+      value.tick(_dt);
+    }
+
+    final positionBefore = value.value;
+    final velocityBefore = value.velocity;
+    expect(velocityBefore, greaterThan(0));
+
+    value.retarget(200, _spring);
+
+    // No teleport, and the momentum toward the old target is carried over.
+    expect(value.value, positionBefore);
+    expect(value.velocity, velocityBefore);
+
+    value.tick(_dt);
+    expect(value.value, greaterThan(positionBefore));
+
+    settle(value);
+    expect(value.value, 200);
+  });
+
+  test('reversing mid-flight is continuous and returns to the new target', () {
+    final value = SpringValue(0)..retarget(100, _spring);
+    for (var i = 0; i < 10; i++) {
+      value.tick(_dt);
+    }
+
+    final positionBefore = value.value;
+    final velocityBefore = value.velocity;
+
+    value.retarget(0, _spring);
+
+    // The reversal does not teleport, and it inherits the outbound velocity —
+    // the restoring force then bleeds that off over the following frames.
+    expect(value.value, positionBefore);
+    expect(value.velocity, velocityBefore);
+
+    settle(value);
+    expect(value.value, 0);
+    expect(value.velocity, 0);
+  });
+}
