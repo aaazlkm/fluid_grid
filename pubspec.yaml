@@ -1,0 +1,20 @@
+name: fluid_grid
+description: A sectioned, reorderable, implicitly animated masonry grid with spring-driven motion.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.12.1 <4.0.0"
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  dart_lint:
+    git:
+      url: git@github.com:aaazlkm/dart_lint.git
+      ref: v2.0.19
+  flutter_test:
+    sdk: flutter
