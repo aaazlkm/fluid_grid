@@ -23,6 +23,11 @@ double zoomLevelForScale({
   required double baseZoom,
   required GridZoomConfig config,
 }) {
+  // No scale change → no zoom change: preserve [baseZoom] exactly, even when it
+  // is itself a rubber-banded overshoot from an unsettled previous pinch.
+  // Re-applying the rubber-band curve here would compress that overshoot and
+  // snap the grid back under the fingers before they have moved.
+  if (scale == 1) return baseZoom;
   final raw = scale <= 0 ? config.maxCrossAxisCount.toDouble() : baseZoom / scale;
   return _rubberBand(
     raw,
@@ -40,8 +45,10 @@ double _rubberBand(double value, {required double min, required double max, requ
   return value;
 }
 
-/// Diminishing-returns curve: `d` in, always less than `d` out, flattening as
-/// `d` grows. `factor` scales how far the overshoot is allowed to travel.
+/// Diminishing-returns curve `factor·d/(1 + d)`: grows sublinearly in `d` and
+/// saturates toward `factor` as `d` → ∞, so `factor` bounds how far the
+/// overshoot is ever allowed to travel. With the intended `factor` in `[0, 1]`
+/// the result stays below `d`.
 double _resist(double distance, double factor) => factor * distance / (1 + distance);
 
 /// The integer column count a gesture settles to when the fingers lift.

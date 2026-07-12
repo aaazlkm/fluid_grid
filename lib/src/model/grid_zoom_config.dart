@@ -12,7 +12,9 @@ class GridZoomConfig {
     this.flingVelocityThreshold = 1.0,
     this.crossfade = true,
   }) : assert(minCrossAxisCount >= 1, 'minCrossAxisCount must be at least 1'),
-       assert(maxCrossAxisCount >= minCrossAxisCount, 'maxCrossAxisCount must be >= minCrossAxisCount');
+       assert(maxCrossAxisCount >= minCrossAxisCount, 'maxCrossAxisCount must be >= minCrossAxisCount'),
+       assert(rubberBandFactor >= 0 && rubberBandFactor < double.infinity, 'rubberBandFactor must be finite and non-negative'),
+       assert(flingVelocityThreshold >= 0 && flingVelocityThreshold < double.infinity, 'flingVelocityThreshold must be finite and non-negative');
 
   /// Fewest columns the grid zooms out to (biggest cards).
   final int minCrossAxisCount;

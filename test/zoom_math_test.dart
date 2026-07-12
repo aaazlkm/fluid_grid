@@ -55,6 +55,14 @@ void main() {
       expect(zoomLevelForScale(scale: 1, baseZoom: 2.4, config: config), moreOrLessEquals(2.4));
       expect(zoomLevelForScale(scale: 1.2, baseZoom: 2.4, config: config), moreOrLessEquals(2));
     });
+
+    test('scale of 1 preserves an already-rubber-banded overshoot', () {
+      // A second pinch that begins before an edge overshoot has settled starts
+      // from an out-of-range base. The first update (scale 1) must hold that
+      // value, not re-band it back under the fingers.
+      const rubber = GridZoomConfig(rubberBandFactor: 0.15);
+      expect(zoomLevelForScale(scale: 1, baseZoom: 4.12, config: rubber), 4.12);
+    });
   });
 
   group('resolveZoomRelease', () {
