@@ -154,6 +154,16 @@ class GridAnimator {
     _ghostRects[id] = lastRect;
   }
 
+  /// Cancel an in-progress exit because [id] came back into the data before its
+  /// fade finished: drop the ghost rect and fade the surviving animation back
+  /// in from wherever it had reached, rather than leaving it fading to nothing.
+  void cancelExit(Object id) {
+    final item = _items[id];
+    if (item == null) return;
+    item.phase = item.fade >= 1 ? _FadePhase.steady : _FadePhase.entering;
+    _ghostRects.remove(id);
+  }
+
   /// Forget an item entirely (its exit finished, or it was never animated).
   void remove(Object id) {
     _items.remove(id);

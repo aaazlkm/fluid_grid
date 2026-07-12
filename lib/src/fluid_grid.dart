@@ -255,6 +255,13 @@ class _FluidGridState<T> extends State<FluidGrid<T>> with SingleTickerProviderSt
     final previous = Map<Object, T>.of(_itemsById);
     _indexItems();
 
+    // An id that comes back before its exit fade finished must stop being a
+    // ghost: otherwise the build emits both the ghost and the live tile for it,
+    // and the live tile keeps fading out under the stale exiting phase.
+    for (final id in _itemsById.keys) {
+      if (_ghosts.remove(id) != null) _animator.cancelExit(id);
+    }
+
     final box = _renderBox;
     for (final entry in previous.entries) {
       final id = entry.key;
@@ -322,7 +329,11 @@ class _FluidGridState<T> extends State<FluidGrid<T>> with SingleTickerProviderSt
     _startTicker();
   }
 
-  /// The dragged item's slot may exceed a section that shrank under it.
+  /// Keeps the drag hypothesis valid against the incoming sections: its slot
+  /// may exceed a section that shrank under it, or its whole section may have
+  /// disappeared. In the latter case it falls back to the end of the item's
+  /// origin section (or the first section), so the lifted item is never
+  /// stranded pointing at a section that no longer exists.
   InsertionCandidate _clampHypothesis(InsertionCandidate hypothesis) {
     for (final section in widget.sections) {
       if (section.id != hypothesis.sectionId) continue;
@@ -330,7 +341,13 @@ class _FluidGridState<T> extends State<FluidGrid<T>> with SingleTickerProviderSt
       if (hypothesis.index <= limit) return hypothesis;
       return InsertionCandidate(sectionId: hypothesis.sectionId, index: limit);
     }
-    return hypothesis;
+
+    // The hypothesis section is gone; re-home to the origin section if it
+    // survives, else the first remaining section.
+    final fallback = widget.sections.where((section) => section.id == _drag?.fromSectionId).firstOrNull ?? widget.sections.firstOrNull;
+    if (fallback == null) return hypothesis;
+    final limit = fallback.items.where((item) => widget.idOf(item) != _drag?.id).length;
+    return InsertionCandidate(sectionId: fallback.id, index: limit);
   }
 
   // --- Ordering ---

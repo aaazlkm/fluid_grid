@@ -314,4 +314,31 @@ void main() {
       expect(result, isNull);
     });
   });
+
+  testWidgets('an item re-added before its exit fade finishes renders once, not as a ghost', (tester) async {
+    await tester.pumpWidget(const _Harness(pinned: [_Item('a', 60), _Item('b', 60)], unpinned: []));
+    await tester.pumpAndSettle();
+    expect(find.text('b'), findsOneWidget);
+
+    // Remove b, but only pump partway through its exit fade so it is still a
+    // live ghost.
+    await tester.pumpWidget(const _Harness(pinned: [_Item('a', 60)], unpinned: []));
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(find.text('b'), findsOneWidget, reason: 'still fading out');
+
+    // Bring b back before the fade completes.
+    await tester.pumpWidget(const _Harness(pinned: [_Item('a', 60), _Item('b', 60)], unpinned: []));
+    await tester.pump();
+
+    // Exactly one b — the revived live tile, not a ghost plus a live copy.
+    expect(find.text('b'), findsOneWidget, reason: 'the ghost was cancelled, not left alongside the live tile');
+
+    // And it settles fully opaque rather than fading to nothing.
+    await tester.pumpAndSettle();
+    expect(find.text('b'), findsOneWidget);
+    final opacity = tester.widgetList<Opacity>(find.ancestor(of: find.text('b'), matching: find.byType(Opacity)));
+    for (final o in opacity) {
+      expect(o.opacity, greaterThan(0.99), reason: 'the revived tile is opaque, not mid-exit');
+    }
+  });
 }
