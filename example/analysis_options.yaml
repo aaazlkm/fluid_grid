@@ -1,0 +1,5 @@
+# The example app uses Flutter's default analysis. The package itself
+# (../analysis_options.yaml) enforces the full dart_lint rule set.
+analyzer:
+  language:
+    strict-casts: true

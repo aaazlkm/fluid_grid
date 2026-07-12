@@ -1,0 +1,21 @@
+name: fluid_grid_example
+description: A photo-gallery example for fluid_grid — square tiles, pinch to zoom, drag to reorder.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.12.1 <4.0.0"
+  flutter: ">=3.44.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fluid_grid:
+    path: ../
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
