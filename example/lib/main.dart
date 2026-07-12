@@ -41,8 +41,8 @@ class PhotoGalleryPage extends StatefulWidget {
 }
 
 class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
-  static const _minColumns = 1;
-  static const _maxColumns = 16;
+  static const _minColumns = 2;
+  static const _maxColumns = 6;
 
   int _columns = 3;
   late final List<PhotoSection> _sections = _seedSections();

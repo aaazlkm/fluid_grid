@@ -12,9 +12,12 @@ iOS Photos app:
 
 ## Run
 
+Platform runners aren't committed, so generate them once, then run:
+
 ```sh
-cd packages/fluid_grid/example
-fvm flutter run
+cd example
+flutter create --platforms=android,ios,macos .
+flutter run
 ```
 
 Everything lives in [`lib/main.dart`](lib/main.dart) — no image assets, tiles are
