@@ -21,6 +21,7 @@ class SpringValue {
   double _velocity = 0;
 
   SpringSimulation? _simulation;
+  SpringDescription? _spring;
   double _elapsed = 0;
 
   double get value => _value;
@@ -34,17 +35,24 @@ class SpringValue {
     _target = value;
     _velocity = 0;
     _simulation = null;
+    _spring = null;
   }
 
   /// Spring toward [target], preserving current velocity.
+  ///
+  /// A running simulation is reused only when *both* the target and the spring
+  /// tuning are unchanged — handing a moving value from one spring to another
+  /// at the same target (e.g. the zoom-tracking → settle handoff on release)
+  /// must adopt the new tuning, not keep coasting under the old one.
   void retarget(double target, SpringDescription spring) {
-    if (_target == target && _simulation != null) return;
+    if (_simulation != null && _target == target && _sameSpring(spring)) return;
     if (_simulation == null && (target - _value).abs() <= _kSpringTolerance.distance) {
       jumpTo(target);
       return;
     }
 
     _target = target;
+    _spring = spring;
     _simulation = SpringSimulation(spring, _value, target, _velocity)..tolerance = _kSpringTolerance;
     _elapsed = 0;
   }
@@ -62,8 +70,17 @@ class SpringValue {
       _value = _target;
       _velocity = 0;
       _simulation = null;
+      _spring = null;
       return false;
     }
     return true;
+  }
+
+  /// Whether [spring] has the same tuning as the running simulation's. Compared
+  /// by value (SpringDescription has no `==`), so distinct instances with equal
+  /// tuning are treated as the same and don't pointlessly restart the sim.
+  bool _sameSpring(SpringDescription spring) {
+    final current = _spring;
+    return current != null && current.mass == spring.mass && current.stiffness == spring.stiffness && current.damping == spring.damping;
   }
 }

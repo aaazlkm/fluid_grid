@@ -106,4 +106,30 @@ void main() {
     expect(value.value, 0);
     expect(value.velocity, 0);
   });
+
+  test('retargeting to the same target with a new spring adopts the new tuning', () {
+    const soft = SpringDescription(mass: 1, stiffness: 40, damping: 12);
+    const stiff = SpringDescription(mass: 1, stiffness: 900, damping: 60);
+
+    final soften = SpringValue(0)..retarget(100, soft);
+    final stiffen = SpringValue(0)..retarget(100, soft);
+    for (var i = 0; i < 6; i++) {
+      soften.tick(_dt);
+      stiffen.tick(_dt);
+    }
+    // Same position/velocity so far.
+    expect(stiffen.value, moreOrLessEquals(soften.value));
+
+    // Hand off to a much stiffer spring at the *same* target: the tuning must
+    // actually change, so the next frame accelerates harder than staying soft.
+    stiffen.retarget(100, stiff);
+    final softNext = (soften..tick(_dt)).value;
+    final stiffNext = (stiffen..tick(_dt)).value;
+    expect(stiffNext, greaterThan(softNext), reason: 'the stiffer spring pulls harder toward the target');
+
+    // Re-issuing the identical target+tuning does not restart the simulation.
+    final beforeElapsedProgress = stiffen.value;
+    stiffen.retarget(100, stiff);
+    expect((stiffen..tick(_dt)).value, greaterThan(beforeElapsedProgress));
+  });
 }

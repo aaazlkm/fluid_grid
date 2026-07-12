@@ -137,6 +137,11 @@ class GridLayoutResult {
 /// Column extents reset at every section boundary, matching the previous
 /// implementation's one-grid-per-section structure.
 GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
+  // A non-positive column count would build an empty column list and then
+  // index into it while placing the first item. The widget guarantees a
+  // positive count; this asserts the solver's own precondition so a stray 0
+  // fails loudly at the source instead of as an opaque RangeError.
+  assert(spec.crossAxisCount > 0, 'crossAxisCount must be positive; got ${spec.crossAxisCount}');
   final itemRects = <Object, Rect>{};
   final sections = <Object, SectionGeometry>{};
 
