@@ -58,11 +58,18 @@ class ZoomCellOffsetStore {
   }
 
   /// Drops offsets of sections that left the data.
+  ///
+  /// A count whose offsets all belonged to departed sections is pruned
+  /// entirely (its alignment referenced nothing that survives). Canonical
+  /// assignments — stored as an empty map by [assignCanonical] — are section
+  /// agnostic and are KEPT, so [contains] stays true for them across a
+  /// reconcile and a re-entering canonical count is not treated as new.
   void retainSections(bool Function(Object sectionId) keep) {
-    for (final offsets in _byCount.values) {
+    _byCount.removeWhere((count, offsets) {
+      if (offsets.isEmpty) return false; // canonical assignment — preserve.
       offsets.removeWhere((sectionId, offset) => !keep(sectionId));
-    }
-    _byCount.removeWhere((count, offsets) => offsets.isEmpty);
+      return offsets.isEmpty; // every section left — the alignment is stale.
+    });
   }
 
   /// Forgets everything (e.g. when the allowed zoom levels change at rest).
