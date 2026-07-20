@@ -580,7 +580,10 @@ mixin MasonryRenderCore on RenderObject {
   /// child wins), skipping ghosts and crossfade overlay copies. [position] is
   /// in grid-local coordinates.
   @protected
-  bool hitTestGridChildren(BoxHitTestResult result, {required Offset position}) {
+  bool hitTestGridChildren(
+    BoxHitTestResult result, {
+    required Offset position,
+  }) {
     for (final child in gridChildren.toList().reversed) {
       final facts = factsOf(child);
       if (facts.role == GridChildRole.ghost || facts.isOverlay) continue;

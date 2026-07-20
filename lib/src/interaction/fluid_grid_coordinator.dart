@@ -342,9 +342,7 @@ class FluidGridCoordinator<T> {
             animator.zoomLevel.value,
           )?.itemRects[nearest];
     if (predicted != null && predicted.height != 0) {
-      final focalLocalY = host
-          .globalToGridLocal(Offset(0, focalGlobalY!))
-          .dy;
+      final focalLocalY = host.globalToGridLocal(Offset(0, focalGlobalY!)).dy;
       // reanchor first so the x fraction carries the old anchor's grid
       // position over (the photos canvases are anchored on x too), then
       // pin dy to the focal against the predicted post-change layout.

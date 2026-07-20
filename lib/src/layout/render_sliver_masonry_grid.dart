@@ -635,8 +635,7 @@ class RenderSliverFluidGrid extends RenderSliver
       FluidChildKind.header => GridChildRole.header,
       FluidChildKind.footer => GridChildRole.footer,
       FluidChildKind.ghost => GridChildRole.ghost,
-      FluidChildKind.item ||
-      FluidChildKind.itemOverlay => GridChildRole.item,
+      FluidChildKind.item || FluidChildKind.itemOverlay => GridChildRole.item,
     };
     // A slot is only carried while the crossfade builds dual renditions —
     // exactly the condition the shared geometry gate relies on.

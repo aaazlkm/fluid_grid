@@ -30,8 +30,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// The widget is uncontrolled, exactly like `FluidGrid`: feed [onReorderFinished]
 /// and [onCrossAxisCountChanged] back in as [sections] / [crossAxisCount].
-class SliverFluidGrid<T> extends StatefulWidget
-    implements FluidGridConfig<T> {
+class SliverFluidGrid<T> extends StatefulWidget implements FluidGridConfig<T> {
   const SliverFluidGrid({
     required this.sections,
     required this.idOf,
