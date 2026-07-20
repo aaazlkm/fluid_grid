@@ -93,8 +93,7 @@ Future<void> pinch(
 
   const steps = 6;
   for (var step = 1; step <= steps; step++) {
-    final separation =
-        fromSeparation + (toSeparation - fromSeparation) * step / steps;
+    final separation = fromSeparation + (toSeparation - fromSeparation) * step / steps;
     await g1.moveTo(center - Offset(separation / 2, 0));
     await g2.moveTo(center + Offset(separation / 2, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -324,8 +323,7 @@ void main() {
         expect(
           (current.dx - previous.dx).abs(),
           lessThan(15),
-          reason:
-              'frame $step: capturing at a displaced focal must not shift the canvas sideways',
+          reason: 'frame $step: capturing at a displaced focal must not shift the canvas sideways',
         );
         previous = current;
       }
@@ -371,21 +369,18 @@ void main() {
 
     final probes = find.byType(_Card);
     var previous = [
-      for (var i = 0; i < probes.evaluate().length; i++)
-        tester.getTopLeft(probes.at(i)),
+      for (var i = 0; i < probes.evaluate().length; i++) tester.getTopLeft(probes.at(i)),
     ];
     for (var frame = 0; frame < 30; frame++) {
       await tester.pump(const Duration(milliseconds: 16));
       final current = [
-        for (var i = 0; i < probes.evaluate().length; i++)
-          tester.getTopLeft(probes.at(i)),
+        for (var i = 0; i < probes.evaluate().length; i++) tester.getTopLeft(probes.at(i)),
       ];
       for (var i = 0; i < current.length; i++) {
         expect(
           (current[i].dx - previous[i].dx).abs(),
           lessThan(1),
-          reason:
-              'frame $frame, tile $i: release must not slide tiles sideways',
+          reason: 'frame $frame, tile $i: release must not slide tiles sideways',
         );
       }
       previous = current;

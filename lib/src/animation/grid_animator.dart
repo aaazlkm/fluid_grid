@@ -6,9 +6,7 @@ import 'package:fluid_grid/src/model/grid_springs.dart';
 enum _FadePhase { steady, entering, exiting }
 
 class _ItemAnimation {
-  _ItemAnimation(Offset origin)
-    : x = SpringValue(origin.dx),
-      y = SpringValue(origin.dy);
+  _ItemAnimation(Offset origin) : x = SpringValue(origin.dx), y = SpringValue(origin.dy);
 
   final SpringValue x;
   final SpringValue y;
@@ -18,8 +16,7 @@ class _ItemAnimation {
 
   Offset get offset => Offset(x.value, y.value);
 
-  bool get isAnimating =>
-      x.isAnimating || y.isAnimating || phase != _FadePhase.steady;
+  bool get isAnimating => x.isAnimating || y.isAnimating || phase != _FadePhase.steady;
 }
 
 /// Owns every animated quantity in the grid and advances them from a single
@@ -29,8 +26,7 @@ class _ItemAnimation {
 /// total height feed back into layout, so they are reported separately via
 /// [needsLayout] — the render object relayouts only while those are in motion.
 class GridAnimator {
-  GridAnimator({required this.springs, double initialZoomLevel = 2})
-    : zoomLevel = SpringValue(initialZoomLevel);
+  GridAnimator({required this.springs, double initialZoomLevel = 2}) : zoomLevel = SpringValue(initialZoomLevel);
 
   GridSprings springs;
 
@@ -123,8 +119,7 @@ class GridAnimator {
       final item = _items.putIfAbsent(id, () {
         // A brand-new item starts at its target and fades in rather than
         // sliding from an arbitrary origin.
-        final fresh = _ItemAnimation(topLeft)
-          ..phase = jump ? _FadePhase.steady : _FadePhase.entering;
+        final fresh = _ItemAnimation(topLeft)..phase = jump ? _FadePhase.steady : _FadePhase.entering;
         if (!jump) fresh.fade = 0;
         return fresh;
       });
@@ -213,10 +208,7 @@ class GridAnimator {
     // tick snaps its value to the target and reports "done", so relayout
     // whenever one *was* moving at the start of the frame — otherwise the exact
     // resting layout (e.g. the settled column width) is never rendered.
-    final hadLayoutMotion =
-        _height.isAnimating ||
-        zoomLevel.isAnimating ||
-        _collapse.values.any((value) => value.isAnimating);
+    final hadLayoutMotion = _height.isAnimating || zoomLevel.isAnimating || _collapse.values.any((value) => value.isAnimating);
 
     if (_height.tick(dt)) active = true;
     if (zoomLevel.tick(dt)) active = true;
@@ -263,16 +255,9 @@ class GridAnimator {
     final micros = duration.inMicroseconds;
     if (micros <= 0) return target;
     final step = dt * 1000000 / micros;
-    return target > current
-        ? (current + step).clamp(0.0, 1.0)
-        : (current - step).clamp(0.0, 1.0);
+    return target > current ? (current + step).clamp(0.0, 1.0) : (current - step).clamp(0.0, 1.0);
   }
 
   /// True while any spring or fade is live.
-  bool get isAnimating =>
-      _height.isAnimating ||
-      zoomLevel.isAnimating ||
-      lift.isAnimating ||
-      _collapse.values.any((value) => value.isAnimating) ||
-      _items.values.any((item) => item.isAnimating);
+  bool get isAnimating => _height.isAnimating || zoomLevel.isAnimating || lift.isAnimating || _collapse.values.any((value) => value.isAnimating) || _items.values.any((item) => item.isAnimating);
 }

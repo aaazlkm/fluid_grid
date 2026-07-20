@@ -9,8 +9,7 @@ class TwoFingerScaleGestureRecognizer extends ScaleGestureRecognizer {
 
   @override
   void resolve(GestureDisposition disposition) {
-    if (disposition == GestureDisposition.accepted &&
-        (pointerCount < 2 || !canStart())) {
+    if (disposition == GestureDisposition.accepted && (pointerCount < 2 || !canStart())) {
       return;
     }
     super.resolve(disposition);

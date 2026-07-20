@@ -23,13 +23,10 @@ class DragStartListener extends StatelessWidget {
 
     return RawGestureDetector(
       gestures: {
-        DelayedMultiDragGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-              DelayedMultiDragGestureRecognizer
-            >(
-              () => DelayedMultiDragGestureRecognizer(delay: delay),
-              (instance) => instance.onStart = onStart,
-            ),
+        DelayedMultiDragGestureRecognizer: GestureRecognizerFactoryWithHandlers<DelayedMultiDragGestureRecognizer>(
+          () => DelayedMultiDragGestureRecognizer(delay: delay),
+          (instance) => instance.onStart = onStart,
+        ),
       },
       child: child,
     );

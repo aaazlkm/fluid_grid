@@ -20,8 +20,7 @@ sealed class GridItemHeight<T> {
   const GridItemHeight();
 
   /// Exact heights, computed up front from data. See [GridItemHeight].
-  const factory GridItemHeight.builder(ItemHeightBuilder<T> heightOf) =
-      GridItemHeightBuilder<T>;
+  const factory GridItemHeight.builder(ItemHeightBuilder<T> heightOf) = GridItemHeightBuilder<T>;
 
   /// Heights measured from the rendered content. See [GridItemHeight].
   const factory GridItemHeight.measured() = GridItemHeightMeasured<T>;

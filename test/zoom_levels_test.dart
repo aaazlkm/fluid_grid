@@ -65,8 +65,7 @@ class _HarnessState extends State<_Harness> {
   );
 }
 
-RenderMasonryGrid _grid(WidgetTester tester) =>
-    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid _grid(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 Future<void> _pinch(
   WidgetTester tester, {
@@ -85,8 +84,7 @@ Future<void> _pinch(
 
   const steps = 6;
   for (var step = 1; step <= steps; step++) {
-    final separation =
-        fromSeparation + (toSeparation - fromSeparation) * step / steps;
+    final separation = fromSeparation + (toSeparation - fromSeparation) * step / steps;
     await g1.moveTo(center - Offset(separation / 2, 0));
     await g2.moveTo(center + Offset(separation / 2, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -162,8 +160,7 @@ void main() {
     expect(
       crossfade.high,
       _levels[pairIndex + 1],
-      reason:
-          'endpoints must be ADJACENT levels, never an intermediate integer',
+      reason: 'endpoints must be ADJACENT levels, never an intermediate integer',
     );
 
     await g1.up();

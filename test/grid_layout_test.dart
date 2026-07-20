@@ -12,8 +12,7 @@ GridSectionSpec section(
 }) => GridSectionSpec(
   id: id,
   items: [
-    for (final (itemId, height) in items)
-      GridItemSpec(id: itemId, height: height),
+    for (final (itemId, height) in items) GridItemSpec(id: itemId, height: height),
   ],
   headerHeight: headerHeight,
   footerHeight: footerHeight,
@@ -269,8 +268,7 @@ void main() {
       final two = solveAt(2);
       final blended = lerpGridLayoutResult(one, two, 0.5);
 
-      final expectedTop =
-          (one.itemRects['c']!.top + two.itemRects['c']!.top) / 2;
+      final expectedTop = (one.itemRects['c']!.top + two.itemRects['c']!.top) / 2;
       expect(blended.itemRects['c']!.top, moreOrLessEquals(expectedTop));
       expect(
         blended.totalHeight,
@@ -305,9 +303,7 @@ void main() {
       expect(
         blended.sections['s']!.contentBottom,
         moreOrLessEquals(
-          (one.sections['s']!.contentBottom +
-                  two.sections['s']!.contentBottom) /
-              2,
+          (one.sections['s']!.contentBottom + two.sections['s']!.contentBottom) / 2,
         ),
       );
     });

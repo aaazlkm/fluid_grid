@@ -11,8 +11,7 @@ int settle(SpringValue value, {int maxFrames = 600}) {
   var frames = 0;
   while (value.tick(_dt)) {
     frames++;
-    if (frames > maxFrames)
-      fail('spring did not settle within $maxFrames frames');
+    if (frames > maxFrames) fail('spring did not settle within $maxFrames frames');
   }
   return frames;
 }

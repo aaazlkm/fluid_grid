@@ -66,8 +66,7 @@ class GridLayoutSpec {
   final EdgeInsets padding;
   final TextDirection textDirection;
 
-  double get contentWidth =>
-      (width - padding.horizontal).clamp(0.0, double.infinity);
+  double get contentWidth => (width - padding.horizontal).clamp(0.0, double.infinity);
 
   double get columnWidth => columnWidthFor(crossAxisCount);
 
@@ -229,8 +228,7 @@ GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
       for (final item in section.items) {
         var column = 0;
         for (var c = 1; c < spec.crossAxisCount; c++) {
-          if (columnBottoms[c] <
-              columnBottoms[column] - precisionErrorTolerance) {
+          if (columnBottoms[c] < columnBottoms[column] - precisionErrorTolerance) {
             column = c;
           }
         }

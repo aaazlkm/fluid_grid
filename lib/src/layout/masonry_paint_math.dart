@@ -76,9 +76,7 @@ double? photosPairFixedX({
 }) {
   if (anchorLowRect == null || anchorHighRect == null) return null;
   if (lowWidth <= 0 || highWidth <= 0 || lowWidth == highWidth) return null;
-  final fixedX =
-      (anchorLowRect.left * highWidth - anchorHighRect.left * lowWidth) /
-      (highWidth - lowWidth);
+  final fixedX = (anchorLowRect.left * highWidth - anchorHighRect.left * lowWidth) / (highWidth - lowWidth);
   return fixedX.clamp(0.0, gridWidth);
 }
 
@@ -117,9 +115,7 @@ double? photosPairFixedX({
   required double itemWidth,
   required double focalX,
 }) {
-  if (anchorEndpointRect == null ||
-      anchorLerpedRect == null ||
-      endpointWidth <= 0) {
+  if (anchorEndpointRect == null || anchorLerpedRect == null || endpointWidth <= 0) {
     return null;
   }
   final anchorK = Offset(
@@ -143,8 +139,7 @@ Rect mapRectByCanvas(
   ({Offset anchorK, Offset anchorStar, double scale}) canvas,
   Rect rect,
 ) {
-  final topLeft =
-      canvas.anchorStar + (rect.topLeft - canvas.anchorK) * canvas.scale;
+  final topLeft = canvas.anchorStar + (rect.topLeft - canvas.anchorK) * canvas.scale;
   return Rect.fromLTWH(
     topLeft.dx,
     topLeft.dy,
@@ -180,9 +175,7 @@ Rect mapRectByCanvas(
   );
   if (canvas == null) return null;
   return (
-    offset:
-        canvas.anchorStar +
-        (endpointRect.topLeft - canvas.anchorK) * canvas.scale,
+    offset: canvas.anchorStar + (endpointRect.topLeft - canvas.anchorK) * canvas.scale,
     scale: canvas.scale,
   );
 }

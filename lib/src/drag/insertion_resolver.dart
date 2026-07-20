@@ -43,10 +43,7 @@ class InsertionCandidate {
   final int index;
 
   @override
-  bool operator ==(Object other) =>
-      other is InsertionCandidate &&
-      other.sectionId == sectionId &&
-      other.index == index;
+  bool operator ==(Object other) => other is InsertionCandidate && other.sectionId == sectionId && other.index == index;
 
   @override
   int get hashCode => Object.hash(sectionId, index);
@@ -97,11 +94,7 @@ InsertionCandidate? resolveInsertion({
   // real solver's placement exactly (including RTL).
   double xOf(int column) {
     final stride = columnWidth + crossSpacing;
-    if (isRtl)
-      return template.width -
-          template.padding.right -
-          columnWidth -
-          column * stride;
+    if (isRtl) return template.width - template.padding.right - columnWidth - column * stride;
     return template.padding.left + column * stride;
   }
 
@@ -109,15 +102,13 @@ InsertionCandidate? resolveInsertion({
   int shortestColumn(List<double> columnBottoms) {
     var column = 0;
     for (var c = 1; c < count; c++) {
-      if (columnBottoms[c] < columnBottoms[column] - precisionErrorTolerance)
-        column = c;
+      if (columnBottoms[c] < columnBottoms[column] - precisionErrorTolerance) column = c;
     }
     return column;
   }
 
   final draggedHeight = heights[draggedId] ?? 0;
-  final draggedCentre =
-      draggedTopLeft + Offset(columnWidth / 2, draggedHeight / 2);
+  final draggedCentre = draggedTopLeft + Offset(columnWidth / 2, draggedHeight / 2);
 
   InsertionCandidate? best;
   var bestDistance = double.infinity;
@@ -146,9 +137,7 @@ InsertionCandidate? resolveInsertion({
       count,
     );
     if (blocked > 0) {
-      final seedHeight = section.itemIds.isNotEmpty
-          ? (heights[section.itemIds.first] ?? 0)
-          : draggedHeight;
+      final seedHeight = section.itemIds.isNotEmpty ? (heights[section.itemIds.first] ?? 0) : draggedHeight;
       for (var c = 0; c < blocked; c++) {
         columnBottoms[c] = contentTop + seedHeight;
       }
@@ -176,8 +165,7 @@ InsertionCandidate? resolveInsertion({
       if (index < section.itemIds.length) {
         final itemColumn = shortestColumn(columnBottoms);
         final itemTop = columnBottoms[itemColumn] + spacing;
-        columnBottoms[itemColumn] =
-            itemTop + (heights[section.itemIds[index]] ?? 0);
+        columnBottoms[itemColumn] = itemTop + (heights[section.itemIds[index]] ?? 0);
       }
     }
 
@@ -194,9 +182,7 @@ InsertionCandidate? resolveInsertion({
 
   // Hold the current slot until a challenger is meaningfully closer, so the
   // grid does not flap between two near-equidistant slots.
-  if (current != null &&
-      currentDistance.isFinite &&
-      currentDistance - bestDistance <= hysteresis) {
+  if (current != null && currentDistance.isFinite && currentDistance - bestDistance <= hysteresis) {
     return current;
   }
   return best;

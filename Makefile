@@ -27,8 +27,9 @@ analyze: ## Run static analysis
 	$(FLUTTER) analyze
 
 .PHONY: format
-format: ## Format all Dart code
-	$(DART) format .
+format: ## Format the code
+	fvm dart format lib test --line-length=300
+	fvm dart fix --apply
 
 .PHONY: format-check
 format-check: ## Verify formatting without applying changes

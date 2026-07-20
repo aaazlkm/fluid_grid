@@ -11,14 +11,8 @@
 library;
 
 export 'src/fluid_grid.dart' show FluidGrid;
-export 'src/model/grid_item_height.dart'
-    show
-        GridItemHeight,
-        GridItemHeightBuilder,
-        GridItemHeightMeasured,
-        ItemHeightBuilder;
-export 'src/model/grid_reorder_result.dart'
-    show GridReorderResult, GridSectionItems;
+export 'src/model/grid_item_height.dart' show GridItemHeight, GridItemHeightBuilder, GridItemHeightMeasured, ItemHeightBuilder;
+export 'src/model/grid_reorder_result.dart' show GridReorderResult, GridSectionItems;
 export 'src/model/grid_section.dart' show GridSection;
 export 'src/model/grid_springs.dart' show GridSprings;
 export 'src/model/grid_zoom_config.dart' show GridZoomConfig;

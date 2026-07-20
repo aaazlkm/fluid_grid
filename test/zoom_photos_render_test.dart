@@ -95,8 +95,7 @@ class _EchoHarnessState extends State<_EchoHarness> {
                 reorderEnabled: false,
                 zoomConfig: const GridZoomConfig(style: GridZoomStyle.photos),
                 idOf: (item) => item,
-                onCrossAxisCountChanged: (count) =>
-                    setState(() => _count = count),
+                onCrossAxisCountChanged: (count) => setState(() => _count = count),
                 sections: const [
                   GridSection(id: 's', items: ['a', 'b', 'c', 'd']),
                 ],
@@ -139,8 +138,7 @@ class _AbortHarnessState extends State<_AbortHarness> {
                 reorderEnabled: false,
                 zoomConfig: const GridZoomConfig(style: GridZoomStyle.photos),
                 idOf: (item) => item,
-                onCrossAxisCountChanged: (count) =>
-                    setState(() => _count = count),
+                onCrossAxisCountChanged: (count) => setState(() => _count = count),
                 sections: const [
                   GridSection(id: 's', items: ['a', 'b', 'c', 'd', 'e', 'f']),
                 ],
@@ -154,13 +152,11 @@ class _AbortHarnessState extends State<_AbortHarness> {
   );
 }
 
-RenderMasonryGrid _grid(WidgetTester tester) =>
-    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid _grid(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 Finder _slotOf(String id, ZoomSlot slot) => find.descendant(
   of: find.byWidgetPredicate(
-    (widget) =>
-        widget is GridChild && widget.id == id && widget.zoomSlot == slot,
+    (widget) => widget is GridChild && widget.id == id && widget.zoomSlot == slot,
   ),
   matching: find.byType(_Card),
 );
@@ -181,9 +177,7 @@ void _assertPaintedFixedPointIsFocal(
   final grid = _grid(tester);
   final focal = grid.debugPhotosFixedX ?? grid.zoomFocalX;
   for (final slot in [ZoomSlot.low, ZoomSlot.high]) {
-    final endpointRects = slot == ZoomSlot.low
-        ? grid.debugLowRects
-        : grid.debugHighRects;
+    final endpointRects = slot == ZoomSlot.low ? grid.debugLowRects : grid.debugHighRects;
     final endpoint = endpointRects['a'];
     if (endpoint == null || endpoint.width == 0) continue;
     final painted = tester.getRect(_slotOf('a', slot));
@@ -252,16 +246,12 @@ void main() {
       final morph = await startMorphTwoToOne(tester);
 
       // Low canvas = the 1-column endpoint: c sits (0, 160) below a.
-      final lowDelta =
-          tester.getTopLeft(_slotOf('c', ZoomSlot.low)) -
-          tester.getTopLeft(_slotOf('a', ZoomSlot.low));
+      final lowDelta = tester.getTopLeft(_slotOf('c', ZoomSlot.low)) - tester.getTopLeft(_slotOf('a', ZoomSlot.low));
       expect(lowDelta.dx, closeTo(0, 0.5));
       expect(lowDelta.dy, closeTo(160 * morph.sLow, 0.5));
 
       // High canvas = the 2-column endpoint: b sits (200, 0) right of a.
-      final highDelta =
-          tester.getTopLeft(_slotOf('b', ZoomSlot.high)) -
-          tester.getTopLeft(_slotOf('a', ZoomSlot.high));
+      final highDelta = tester.getTopLeft(_slotOf('b', ZoomSlot.high)) - tester.getTopLeft(_slotOf('a', ZoomSlot.high));
       expect(highDelta.dx, closeTo(200 * morph.sHigh, 0.5));
       expect(highDelta.dy, closeTo(0, 0.5));
 

@@ -49,8 +49,7 @@ Widget _harness({
   ),
 );
 
-RenderSliverFluidGrid _renderObject(WidgetTester tester) => tester
-    .renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
+RenderSliverFluidGrid _renderObject(WidgetTester tester) => tester.renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
 
 void main() {
   testWidgets('lays out with exact scroll extent from the height callback', (
@@ -61,9 +60,7 @@ void main() {
 
     // 100 items, 2 columns, 50 rows of 100px + 8px spacing between rows.
     // Column bottoms: row height 100, spacing 8 -> total = 50*100 + 49*8 = 5392.
-    final position = tester
-        .state<ScrollableState>(find.byType(Scrollable))
-        .position;
+    final position = tester.state<ScrollableState>(find.byType(Scrollable)).position;
     expect(position.maxScrollExtent, closeTo(5392 - 600, 0.5));
   });
 

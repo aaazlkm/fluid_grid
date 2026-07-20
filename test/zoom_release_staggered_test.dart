@@ -50,8 +50,7 @@ class _SliverHarnessState extends State<_SliverHarness> {
                 items: [for (var i = 0; i < 30; i++) 'p$i'],
               ),
             ],
-            itemBuilder: (context, item) =>
-                const ColoredBox(color: Color(0xFF4CAF50)),
+            itemBuilder: (context, item) => const ColoredBox(color: Color(0xFF4CAF50)),
           ),
         ],
       ),

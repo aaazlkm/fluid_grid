@@ -165,10 +165,7 @@ mixin MasonryRenderCore on RenderObject {
     final oldId = zoomAnchorId;
     final oldRect = oldId == null ? null : lastLayout?.itemRects[oldId];
     final newRect = lastLayout?.itemRects[newId];
-    if (oldRect != null &&
-        newRect != null &&
-        newRect.width != 0 &&
-        newRect.height != 0) {
+    if (oldRect != null && newRect != null && newRect.width != 0 && newRect.height != 0) {
       final invariant =
           oldRect.topLeft +
           Offset(
@@ -308,21 +305,16 @@ mixin MasonryRenderCore on RenderObject {
     final layout = lastLayout;
     switch (facts.role) {
       case GridChildRole.header:
-        return layout?.sections[facts.sectionId]?.headerRect.topLeft ??
-            Offset.zero;
+        return layout?.sections[facts.sectionId]?.headerRect.topLeft ?? Offset.zero;
       case GridChildRole.footer:
-        return layout?.sections[facts.sectionId]?.footerRect.topLeft ??
-            Offset.zero;
+        return layout?.sections[facts.sectionId]?.footerRect.topLeft ?? Offset.zero;
       case GridChildRole.ghost:
         final id = facts.id;
-        return (id == null ? null : animator.ghostRects[id]?.topLeft) ??
-            Offset.zero;
+        return (id == null ? null : animator.ghostRects[id]?.topLeft) ?? Offset.zero;
       case GridChildRole.item:
         final id = facts.id;
         if (id == null) return Offset.zero;
-        return animator.offsetOf(id) ??
-            layout?.itemRects[id]?.topLeft ??
-            Offset.zero;
+        return animator.offsetOf(id) ?? layout?.itemRects[id]?.topLeft ?? Offset.zero;
     }
   }
 
@@ -346,9 +338,7 @@ mixin MasonryRenderCore on RenderObject {
   @protected
   ({Offset offset, double scale}) effectiveGeometryOf(GridChildFacts facts) {
     final id = facts.id;
-    if (facts.slot != ZoomSlot.none &&
-        facts.role == GridChildRole.item &&
-        id != null) {
+    if (facts.slot != ZoomSlot.none && facts.role == GridChildRole.item && id != null) {
       final isLow = facts.slot == ZoomSlot.low;
       final endpointRects = isLow ? lastLowRects : lastHighRects;
       final endpointWidth = isLow ? lastLowWidth : lastHighWidth;
@@ -361,9 +351,7 @@ mixin MasonryRenderCore on RenderObject {
         final canvas = photosCanvasGeometry(
           endpointRect: endpointRects[id],
           anchorEndpointRect: anchorId == null ? null : endpointRects[anchorId],
-          anchorLerpedRect: anchorId == null
-              ? null
-              : lastLayout?.itemRects[anchorId],
+          anchorLerpedRect: anchorId == null ? null : lastLayout?.itemRects[anchorId],
           anchorFraction: zoomAnchorFraction,
           endpointWidth: endpointWidth,
           itemWidth: lastItemWidth,
@@ -385,8 +373,7 @@ mixin MasonryRenderCore on RenderObject {
   /// [effectiveGeometryOf] keyed by the child itself, for the sliver's
   /// child-position callbacks.
   @protected
-  ({Offset offset, double scale}) effectiveGeometryOfChild(RenderBox child) =>
-      effectiveGeometryOf(factsOf(child));
+  ({Offset offset, double scale}) effectiveGeometryOfChild(RenderBox child) => effectiveGeometryOf(factsOf(child));
 
   // --- Paint ---
 
@@ -405,18 +392,14 @@ mixin MasonryRenderCore on RenderObject {
 
     for (final child in gridChildren) {
       final facts = factsOf(child);
-      if (facts.role == GridChildRole.item &&
-          !facts.isOverlay &&
-          facts.id != null &&
-          facts.id == animator.draggedId) {
+      if (facts.role == GridChildRole.item && !facts.isOverlay && facts.id != null && facts.id == animator.draggedId) {
         // Painted last so it floats above its neighbours.
         dragged = child;
       } else if (facts.slot == ZoomSlot.low) {
         lowSlot.add(child);
       } else if (facts.slot == ZoomSlot.high) {
         highSlot.add(child);
-      } else if (facts.role == GridChildRole.header ||
-          facts.role == GridChildRole.footer) {
+      } else if (facts.role == GridChildRole.header || facts.role == GridChildRole.footer) {
         chrome.add(child);
       } else {
         // Ghosts and single-mode items paint here, beneath the canvases.
@@ -509,19 +492,14 @@ mixin MasonryRenderCore on RenderObject {
     final childOffset = geometry.offset + offset;
     final slotScale = geometry.scale;
 
-    final isItemLike =
-        facts.role == GridChildRole.item || facts.role == GridChildRole.ghost;
-    final isChrome =
-        facts.role == GridChildRole.header ||
-        facts.role == GridChildRole.footer;
+    final isItemLike = facts.role == GridChildRole.item || facts.role == GridChildRole.ghost;
+    final isChrome = facts.role == GridChildRole.header || facts.role == GridChildRole.footer;
 
     final fade = isItemLike && id != null ? animator.fadeOf(id) : 1.0;
 
     // Collapsing sections fade their chrome out as it shrinks to nothing.
     final sectionId = facts.sectionId;
-    final chromeFade = isChrome && sectionId != null
-        ? (1 - animator.collapseOf(sectionId)).clamp(0.0, 1.0)
-        : 1.0;
+    final chromeFade = isChrome && sectionId != null ? (1 - animator.collapseOf(sectionId)).clamp(0.0, 1.0) : 1.0;
 
     final opacity = (fade * chromeFade).clamp(0.0, 1.0);
     if (opacity <= 0) return;
@@ -594,8 +572,7 @@ mixin MasonryRenderCore on RenderObject {
         hit = result.addWithPaintOffset(
           offset: geometry.offset,
           position: position,
-          hitTest: (innerResult, transformed) =>
-              child.hitTest(innerResult, position: transformed),
+          hitTest: (innerResult, transformed) => child.hitTest(innerResult, position: transformed),
         );
       } else {
         final transform = Matrix4.identity()
@@ -604,8 +581,7 @@ mixin MasonryRenderCore on RenderObject {
         hit = result.addWithPaintTransform(
           transform: transform,
           position: position,
-          hitTest: (innerResult, transformed) =>
-              child.hitTest(innerResult, position: transformed),
+          hitTest: (innerResult, transformed) => child.hitTest(innerResult, position: transformed),
         );
       }
       if (hit) return true;

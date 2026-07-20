@@ -94,10 +94,7 @@ void main() {
           sections: sections,
           draggedTopLeft: boundary,
         );
-        final other =
-            withoutCurrent == const InsertionCandidate(sectionId: 's', index: 0)
-            ? const InsertionCandidate(sectionId: 's', index: 1)
-            : const InsertionCandidate(sectionId: 's', index: 0);
+        final other = withoutCurrent == const InsertionCandidate(sectionId: 's', index: 0) ? const InsertionCandidate(sectionId: 's', index: 1) : const InsertionCandidate(sectionId: 's', index: 0);
 
         final held = resolve(
           sections: sections,

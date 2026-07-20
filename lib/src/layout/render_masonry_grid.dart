@@ -19,8 +19,7 @@ import 'package:flutter/widgets.dart';
 // [GridChildRole] and the shared render-object glue live in
 // masonry_render_core.dart.
 export 'package:fluid_grid/src/layout/masonry_paint_math.dart' show ZoomSlot;
-export 'package:fluid_grid/src/layout/masonry_render_core.dart'
-    show GridChildRole;
+export 'package:fluid_grid/src/layout/masonry_render_core.dart' show GridChildRole;
 
 class GridChildParentData extends ContainerBoxParentData<RenderBox> {
   Object? id;
@@ -112,11 +111,7 @@ class SectionLayoutConfig {
   final double emptyDropExtent;
 
   @override
-  bool operator ==(Object other) =>
-      other is SectionLayoutConfig &&
-      other.id == id &&
-      other.collapseWhenEmpty == collapseWhenEmpty &&
-      other.emptyDropExtent == emptyDropExtent;
+  bool operator ==(Object other) => other is SectionLayoutConfig && other.id == id && other.collapseWhenEmpty == collapseWhenEmpty && other.emptyDropExtent == emptyDropExtent;
 
   @override
   int get hashCode => Object.hash(id, collapseWhenEmpty, emptyDropExtent);
@@ -158,21 +153,20 @@ class MasonryGridBody extends MultiChildRenderObjectWidget {
   final List<int>? zoomLevels;
 
   @override
-  RenderMasonryGrid createRenderObject(BuildContext context) =>
-      RenderMasonryGrid(
-        animator: animator,
-        cellOffsets: cellOffsets,
-        sectionConfigs: sectionConfigs,
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: crossAxisSpacing,
-        mainAxisSpacing: mainAxisSpacing,
-        padding: padding,
-        textDirection: textDirection,
-        isDragging: isDragging,
-        liftScale: liftScale,
-        zoomStyle: zoomStyle,
-        zoomLevels: zoomLevels,
-      );
+  RenderMasonryGrid createRenderObject(BuildContext context) => RenderMasonryGrid(
+    animator: animator,
+    cellOffsets: cellOffsets,
+    sectionConfigs: sectionConfigs,
+    crossAxisCount: crossAxisCount,
+    crossAxisSpacing: crossAxisSpacing,
+    mainAxisSpacing: mainAxisSpacing,
+    padding: padding,
+    textDirection: textDirection,
+    isDragging: isDragging,
+    liftScale: liftScale,
+    zoomStyle: zoomStyle,
+    zoomLevels: zoomLevels,
+  );
 
   @override
   void updateRenderObject(
@@ -202,12 +196,7 @@ class MasonryGridBody extends MultiChildRenderObjectWidget {
 ///
 /// Springs never invalidate layout: item offsets are applied at paint time.
 /// Only the animated total height and section collapse feed back into layout.
-class RenderMasonryGrid extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, GridChildParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, GridChildParentData>,
-        MasonryRenderCore
-    implements GridHost {
+class RenderMasonryGrid extends RenderBox with ContainerRenderObjectMixin<RenderBox, GridChildParentData>, RenderBoxContainerDefaultsMixin<RenderBox, GridChildParentData>, MasonryRenderCore implements GridHost {
   RenderMasonryGrid({
     required GridAnimator animator,
     required ZoomCellOffsetStore cellOffsets,
@@ -382,10 +371,7 @@ class RenderMasonryGrid extends RenderBox
   }
 
   @override
-  Map<Object, double> nearestItemHeightsForColumns(int count) =>
-      (count - lastLowCount).abs() <= (count - lastHighCount).abs()
-      ? _lowSlotHeights
-      : _highSlotHeights;
+  Map<Object, double> nearestItemHeightsForColumns(int count) => (count - lastLowCount).abs() <= (count - lastHighCount).abs() ? _lowSlotHeights : _highSlotHeights;
 
   @override
   double get gridWidth => hasSize ? size.width : lastContentWidth;
@@ -405,9 +391,7 @@ class RenderMasonryGrid extends RenderBox
 
   @override
   void performLayout() {
-    final width = constraints.maxWidth.isFinite
-        ? constraints.maxWidth
-        : constraints.minWidth;
+    final width = constraints.maxWidth.isFinite ? constraints.maxWidth : constraints.minWidth;
 
     // Geometry is driven by the animated zoom level, not the committed count, so
     // a pinch or a settle morphs continuously between two integer layouts.
@@ -467,9 +451,7 @@ class RenderMasonryGrid extends RenderBox
     );
 
     final anchorId = zoomAnchorId;
-    if (_zoomStyle == GridZoomStyle.photos &&
-        lowCount != highCount &&
-        anchorId != null) {
+    if (_zoomStyle == GridZoomStyle.photos && lowCount != highCount && anchorId != null) {
       maybeFreezePhotosFixedX(
         anchorLowRect: solved.lowRects[anchorId],
         anchorHighRect: solved.highRects[anchorId],
@@ -594,12 +576,8 @@ class RenderMasonryGrid extends RenderBox
     assert(
       () {
         for (final config in _sectionConfigs) {
-          final lowIds = lowItemsBySection[config.id]!
-              .map((item) => item.id)
-              .toSet();
-          final highIds = highItemsBySection[config.id]!
-              .map((item) => item.id)
-              .toSet();
+          final lowIds = lowItemsBySection[config.id]!.map((item) => item.id).toSet();
+          final highIds = highItemsBySection[config.id]!.map((item) => item.id).toSet();
           if (!setEquals(lowIds, highIds)) return false;
           if (lowIds.length != lowItemsBySection[config.id]!.length) {
             return false;
@@ -677,10 +655,8 @@ class RenderMasonryGrid extends RenderBox
   }
 
   @override
-  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) =>
-      hitTestGridChildren(result, position: position);
+  bool hitTestChildren(BoxHitTestResult result, {required Offset position}) => hitTestGridChildren(result, position: position);
 
   @override
-  void applyPaintTransform(RenderBox child, Matrix4 transform) =>
-      applyGridPaintTransform(child, transform);
+  void applyPaintTransform(RenderBox child, Matrix4 transform) => applyGridPaintTransform(child, transform);
 }

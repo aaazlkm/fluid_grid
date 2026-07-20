@@ -59,8 +59,7 @@ void main() {
     );
 
     test('a genuinely new id fades in from zero opacity', () {
-      final a = animator()
-        ..syncTargets(rects: {'a': _rect(0)}, totalHeight: 40, jump: false);
+      final a = animator()..syncTargets(rects: {'a': _rect(0)}, totalHeight: 40, jump: false);
 
       expect(
         a.fadeOf('a'),

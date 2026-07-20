@@ -39,8 +39,7 @@ class _HarnessState extends State<_Harness> {
               setState(() => _count = count);
             },
             itemHeight: GridItemHeight.builder((_, _) => 100),
-            itemBuilder: (context, i) =>
-                SizedBox(height: 100, child: Text('item $i')),
+            itemBuilder: (context, i) => SizedBox(height: 100, child: Text('item $i')),
           ),
         ],
       ),
@@ -48,8 +47,7 @@ class _HarnessState extends State<_Harness> {
   );
 }
 
-RenderSliverFluidGrid _grid(WidgetTester tester) => tester
-    .renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
+RenderSliverFluidGrid _grid(WidgetTester tester) => tester.renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
 
 void main() {
   testWidgets(
@@ -98,24 +96,18 @@ void main() {
       final constraints = grid.constraints;
       final winTop = constraints.scrollOffset + constraints.cacheOrigin;
       final winBottom = winTop + constraints.remainingCacheExtent;
-      final materialised = grid.debugMaterialisedKeys
-          .where((key) => key.kind == FluidChildKind.item)
-          .map((key) => key.id)
-          .toSet();
+      final materialised = grid.debugMaterialisedKeys.where((key) => key.kind == FluidChildKind.item).map((key) => key.id).toSet();
 
       var canvasMattered = false;
       for (final entry in grid.debugLowRects.entries) {
         final painted = mapRectByCanvas(lowCanvas, entry.value);
-        final paintedVisible =
-            painted.top < winBottom && painted.bottom > winTop;
-        final rawVisible =
-            entry.value.top < winBottom && entry.value.bottom > winTop;
+        final paintedVisible = painted.top < winBottom && painted.bottom > winTop;
+        final rawVisible = entry.value.top < winBottom && entry.value.bottom > winTop;
         if (paintedVisible) {
           expect(
             materialised,
             contains(entry.key),
-            reason:
-                'item ${entry.key} paints inside the window under the low canvas and must be materialised',
+            reason: 'item ${entry.key} paints inside the window under the low canvas and must be materialised',
           );
           if (!rawVisible) canvasMattered = true;
         }

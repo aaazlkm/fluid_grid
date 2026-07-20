@@ -64,8 +64,7 @@ class _StatefulState extends State<_Stateful> {
                     ),
               sections: c.sections,
               itemHeight: GridItemHeight.builder((_, _) => 100),
-              itemBuilder: (context, item) =>
-                  SizedBox(height: 100, child: Text(item)),
+              itemBuilder: (context, item) => SizedBox(height: 100, child: Text(item)),
             ),
           ],
         ),
@@ -74,8 +73,7 @@ class _StatefulState extends State<_Stateful> {
   }
 }
 
-RenderSliverFluidGrid _renderObject(WidgetTester tester) => tester
-    .renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
+RenderSliverFluidGrid _renderObject(WidgetTester tester) => tester.renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
 
 void main() {
   testWidgets(
@@ -94,9 +92,7 @@ void main() {
 
       expect(find.text('HEADER'), findsOneWidget);
       // Header 40 + one row of 100 = 140.
-      final position = tester
-          .state<ScrollableState>(find.byType(Scrollable))
-          .position;
+      final position = tester.state<ScrollableState>(find.byType(Scrollable)).position;
       expect(
         position.maxScrollExtent,
         closeTo((140 - 600).clamp(0, double.infinity), 0.5),

@@ -44,16 +44,14 @@ class SpringValue {
   /// must adopt the new tuning, not keep coasting under the old one.
   void retarget(double target, SpringDescription spring) {
     if (_simulation != null && _target == target && _sameSpring(spring)) return;
-    if (_simulation == null &&
-        (target - _value).abs() <= _kSpringTolerance.distance) {
+    if (_simulation == null && (target - _value).abs() <= _kSpringTolerance.distance) {
       jumpTo(target);
       return;
     }
 
     _target = target;
     _spring = spring;
-    _simulation = SpringSimulation(spring, _value, target, _velocity)
-      ..tolerance = _kSpringTolerance;
+    _simulation = SpringSimulation(spring, _value, target, _velocity)..tolerance = _kSpringTolerance;
     _elapsed = 0;
   }
 
@@ -81,9 +79,6 @@ class SpringValue {
   /// tuning are treated as the same and don't pointlessly restart the sim.
   bool _sameSpring(SpringDescription spring) {
     final current = _spring;
-    return current != null &&
-        current.mass == spring.mass &&
-        current.stiffness == spring.stiffness &&
-        current.damping == spring.damping;
+    return current != null && current.mass == spring.mass && current.stiffness == spring.stiffness && current.damping == spring.damping;
   }
 }

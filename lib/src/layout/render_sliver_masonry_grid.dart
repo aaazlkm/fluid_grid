@@ -29,8 +29,7 @@ class FluidChildKey {
   final Object id;
 
   @override
-  bool operator ==(Object other) =>
-      other is FluidChildKey && other.kind == kind && other.id == id;
+  bool operator ==(Object other) => other is FluidChildKey && other.kind == kind && other.id == id;
 
   @override
   int get hashCode => Object.hash(kind, id);
@@ -60,14 +59,7 @@ class SliverSectionModel {
   final double emptyDropExtent;
 
   @override
-  bool operator ==(Object other) =>
-      other is SliverSectionModel &&
-      other.id == id &&
-      listEquals(other.itemIds, itemIds) &&
-      other.hasHeader == hasHeader &&
-      other.hasFooter == hasFooter &&
-      other.collapseWhenEmpty == collapseWhenEmpty &&
-      other.emptyDropExtent == emptyDropExtent;
+  bool operator ==(Object other) => other is SliverSectionModel && other.id == id && listEquals(other.itemIds, itemIds) && other.hasHeader == hasHeader && other.hasFooter == hasFooter && other.collapseWhenEmpty == collapseWhenEmpty && other.emptyDropExtent == emptyDropExtent;
 
   @override
   int get hashCode => Object.hash(
@@ -167,8 +159,7 @@ class SliverMasonryGridBody extends RenderObjectWidget {
   final Widget Function(BuildContext context, Object itemId) buildOverlay;
   final Widget Function(BuildContext context, Object itemId) buildGhost;
 
-  ZoomSlot get overlaySlot =>
-      primarySlot == ZoomSlot.low ? ZoomSlot.high : ZoomSlot.low;
+  ZoomSlot get overlaySlot => primarySlot == ZoomSlot.low ? ZoomSlot.high : ZoomSlot.low;
 
   @override
   SliverFluidGridElement createElement() => SliverFluidGridElement(this);
@@ -239,16 +230,14 @@ abstract interface class FluidGridChildManager {
 /// rather than by contiguous index, so masonry ordering, per-item zoom overlay
 /// copies, and ghosts all coexist. Modeled on `SliverMultiBoxAdaptorElement`,
 /// minus the index/contiguity invariants.
-class SliverFluidGridElement extends RenderObjectElement
-    implements FluidGridChildManager {
+class SliverFluidGridElement extends RenderObjectElement implements FluidGridChildManager {
   SliverFluidGridElement(SliverMasonryGridBody super.widget);
 
   @override
   SliverMasonryGridBody get widget => super.widget as SliverMasonryGridBody;
 
   @override
-  RenderSliverFluidGrid get renderObject =>
-      super.renderObject as RenderSliverFluidGrid;
+  RenderSliverFluidGrid get renderObject => super.renderObject as RenderSliverFluidGrid;
 
   final Map<FluidChildKey, Element> _children = {};
 
@@ -318,8 +307,7 @@ class SliverFluidGridElement extends RenderObjectElement
   }
 
   @override
-  void insertRenderObjectChild(RenderBox child, FluidChildKey slot) =>
-      renderObject.insertChild(child, slot);
+  void insertRenderObjectChild(RenderBox child, FluidChildKey slot) => renderObject.insertChild(child, slot);
 
   @override
   void moveRenderObjectChild(
@@ -329,12 +317,10 @@ class SliverFluidGridElement extends RenderObjectElement
   ) => renderObject.moveChild(child, from: oldSlot, to: newSlot);
 
   @override
-  void removeRenderObjectChild(RenderBox child, FluidChildKey slot) =>
-      renderObject.removeChild(slot);
+  void removeRenderObjectChild(RenderBox child, FluidChildKey slot) => renderObject.removeChild(slot);
 
   @override
-  void visitChildren(ElementVisitor visitor) =>
-      _children.values.toList().forEach(visitor);
+  void visitChildren(ElementVisitor visitor) => _children.values.toList().forEach(visitor);
 
   @override
   void forgetChild(Element child) {
@@ -372,8 +358,7 @@ class _MeasuredHeightStore {
 
   /// The height to assume for an item not yet measured: the running average of
   /// what has been measured, or [prior] before anything has.
-  double estimate(double prior) =>
-      heights.isEmpty ? prior : _sum / heights.length;
+  double estimate(double prior) => heights.isEmpty ? prior : _sum / heights.length;
 }
 
 /// A fully lazy masonry sliver. The solver runs over every item from either a
@@ -381,9 +366,7 @@ class _MeasuredHeightStore {
 /// rendered children's measured heights (measured mode — approximate until
 /// content is visited), but only children whose animated rect intersects the
 /// cache window are built, laid out, and painted.
-class RenderSliverFluidGrid extends RenderSliver
-    with MasonryRenderCore
-    implements GridHost, FluidGridChildManager {
+class RenderSliverFluidGrid extends RenderSliver with MasonryRenderCore implements GridHost, FluidGridChildManager {
   RenderSliverFluidGrid({
     required GridAnimator animator,
     required ZoomCellOffsetStore cellOffsets,
@@ -591,8 +574,7 @@ class RenderSliverFluidGrid extends RenderSliver
     markNeedsLayout();
   }
 
-  ZoomSlot get _overlaySlot =>
-      _primarySlot == ZoomSlot.low ? ZoomSlot.high : ZoomSlot.low;
+  ZoomSlot get _overlaySlot => _primarySlot == ZoomSlot.low ? ZoomSlot.high : ZoomSlot.low;
 
   // Exact mode: cached per-(column count) callback height maps for the current
   // width basis. Cleared whenever the content, callback, width, or spacing
@@ -639,9 +621,7 @@ class RenderSliverFluidGrid extends RenderSliver
     };
     // A slot is only carried while the crossfade builds dual renditions —
     // exactly the condition the shared geometry gate relies on.
-    final slot = !_dual || role != GridChildRole.item
-        ? ZoomSlot.none
-        : (isOverlay ? _overlaySlot : _primarySlot);
+    final slot = !_dual || role != GridChildRole.item ? ZoomSlot.none : (isOverlay ? _overlaySlot : _primarySlot);
     return (
       id: key.id,
       sectionId: key.id,
@@ -690,8 +670,7 @@ class RenderSliverFluidGrid extends RenderSliver
   }
 
   @override
-  void syncChildren(Set<FluidChildKey> desired) =>
-      childManager.syncChildren(desired);
+  void syncChildren(Set<FluidChildKey> desired) => childManager.syncChildren(desired);
 
   @override
   void attach(PipelineOwner owner) {
@@ -726,8 +705,7 @@ class RenderSliverFluidGrid extends RenderSliver
   // --- Height callback plumbing ---
 
   double _columnWidthFor(int count) {
-    final contentWidth = (constraints.crossAxisExtent - _padding.horizontal)
-        .clamp(0.0, double.infinity);
+    final contentWidth = (constraints.crossAxisExtent - _padding.horizontal).clamp(0.0, double.infinity);
     if (count <= 0) return 0;
     final available = contentWidth - _crossAxisSpacing * (count - 1);
     return (available / count).clamp(0.0, double.infinity);
@@ -775,18 +753,11 @@ class RenderSliverFluidGrid extends RenderSliver
       GridSectionSpec(
         id: section.id,
         items: [
-          for (final id in section.itemIds)
-            GridItemSpec(id: id, height: heights[id] ?? 0),
+          for (final id in section.itemIds) GridItemSpec(id: id, height: heights[id] ?? 0),
         ],
-        headerHeight:
-            (headerHeights[section.id] ?? 0) *
-            (1 - _animator.collapseOf(section.id).clamp(0.0, 1.0)),
-        footerHeight:
-            (footerHeights[section.id] ?? 0) *
-            (1 - _animator.collapseOf(section.id).clamp(0.0, 1.0)),
-        emptyExtent: section.itemIds.isEmpty && _isDragging
-            ? section.emptyDropExtent
-            : 0.0,
+        headerHeight: (headerHeights[section.id] ?? 0) * (1 - _animator.collapseOf(section.id).clamp(0.0, 1.0)),
+        footerHeight: (footerHeights[section.id] ?? 0) * (1 - _animator.collapseOf(section.id).clamp(0.0, 1.0)),
+        emptyExtent: section.itemIds.isEmpty && _isDragging ? section.emptyDropExtent : 0.0,
         leadingCells: _cellOffsets.of(count, section.id),
       ),
   ];
@@ -872,8 +843,7 @@ class RenderSliverFluidGrid extends RenderSliver
 
     // Collapse targets (drives header/footer shrink for empty sections).
     for (final section in _sections) {
-      final wantsCollapse =
-          section.itemIds.isEmpty && section.collapseWhenEmpty && !_isDragging;
+      final wantsCollapse = section.itemIds.isEmpty && section.collapseWhenEmpty && !_isDragging;
       _animator.setCollapseTarget(
         section.id,
         wantsCollapse ? 1 : 0,
@@ -891,15 +861,10 @@ class RenderSliverFluidGrid extends RenderSliver
       // Drop stores whose width basis no longer matches (defensive; setters
       // already clear on width-affecting changes).
       _measuredStores.removeWhere(
-        (count, store) =>
-            (store.widthBasis - _columnWidthFor(count)).abs() > 0.01,
+        (count, store) => (store.widthBasis - _columnWidthFor(count)).abs() > 0.01,
       );
-      frozenEstimate[lowCount] =
-          _measuredStores[lowCount]?.estimate(endpoints.lowWidth) ??
-          endpoints.lowWidth;
-      frozenEstimate[highCount] =
-          _measuredStores[highCount]?.estimate(endpoints.highWidth) ??
-          endpoints.highWidth;
+      frozenEstimate[lowCount] = _measuredStores[lowCount]?.estimate(endpoints.lowWidth) ?? endpoints.lowWidth;
+      frozenEstimate[highCount] = _measuredStores[highCount]?.estimate(endpoints.highWidth) ?? endpoints.highWidth;
     }
 
     // The height map to solve column [count] with this pass. Recorded verbatim
@@ -930,9 +895,7 @@ class RenderSliverFluidGrid extends RenderSliver
     while (true) {
       passes++;
       final lowHeights = heightsForSolve(lowCount);
-      final highHeights = lowCount == highCount
-          ? lowHeights
-          : heightsForSolve(highCount);
+      final highHeights = lowCount == highCount ? lowHeights : heightsForSolve(highCount);
       solveHeightsUsed = {
         lowCount: lowHeights,
         if (highCount != lowCount) highCount: highHeights,
@@ -1131,9 +1094,7 @@ class RenderSliverFluidGrid extends RenderSliver
           break; // already laid out
         case FluidChildKind.item:
         case FluidChildKind.itemOverlay:
-          final slot = key.kind == FluidChildKind.itemOverlay
-              ? _overlaySlot
-              : _primarySlot;
+          final slot = key.kind == FluidChildKind.itemOverlay ? _overlaySlot : _primarySlot;
           final slotCount = slot == ZoomSlot.high ? highCount : lowCount;
           final slotWidth = switch (slot) {
             ZoomSlot.low => endpoints.lowWidth,
@@ -1175,8 +1136,7 @@ class RenderSliverFluidGrid extends RenderSliver
   }) {
     final winTop = constraints.scrollOffset + constraints.cacheOrigin;
     final winBottom = winTop + constraints.remainingCacheExtent;
-    bool intersects(Rect? rect) =>
-        rect != null && rect.top < winBottom && rect.bottom > winTop;
+    bool intersects(Rect? rect) => rect != null && rect.top < winBottom && rect.bottom > winTop;
 
     final desired = <FluidChildKey>{...chromeKeys};
     final draggedId = _animator.draggedId;
@@ -1189,27 +1149,12 @@ class RenderSliverFluidGrid extends RenderSliver
         // itself (over-materialising is safe, under-materialising leaves holes).
         final lowRect = lowRects[id];
         final highRect = highRects[id];
-        final lowPainted = lowRect == null
-            ? null
-            : (lowCanvas == null
-                  ? lowRect
-                  : mapRectByCanvas(lowCanvas, lowRect));
-        final highPainted = highRect == null
-            ? null
-            : (highCanvas == null
-                  ? highRect
-                  : mapRectByCanvas(highCanvas, highRect));
+        final lowPainted = lowRect == null ? null : (lowCanvas == null ? lowRect : mapRectByCanvas(lowCanvas, lowRect));
+        final highPainted = highRect == null ? null : (highCanvas == null ? highRect : mapRectByCanvas(highCanvas, highRect));
         final animatedOffset = _animator.offsetOf(id);
-        final animatedRect = animatedOffset == null || target == null
-            ? null
-            : animatedOffset & target.size;
+        final animatedRect = animatedOffset == null || target == null ? null : animatedOffset & target.size;
 
-        final visible =
-            id == draggedId ||
-            intersects(target) ||
-            intersects(lowPainted) ||
-            intersects(highPainted) ||
-            intersects(animatedRect);
+        final visible = id == draggedId || intersects(target) || intersects(lowPainted) || intersects(highPainted) || intersects(animatedRect);
         if (!visible) continue;
 
         desired.add(FluidChildKey(FluidChildKind.item, id));
@@ -1235,8 +1180,7 @@ class RenderSliverFluidGrid extends RenderSliver
     if (_animator.zoomActive) {
       // Scaled morph copies can overhang; the viewport clip only guards its own
       // edge, so the grid clips to its paint extent while a zoom is in flight.
-      final clip =
-          offset & Size(constraints.crossAxisExtent, geometry!.paintExtent);
+      final clip = offset & Size(constraints.crossAxisExtent, geometry!.paintExtent);
       context.pushClipRect(
         needsCompositing,
         offset,
@@ -1283,16 +1227,13 @@ class RenderSliverFluidGrid extends RenderSliver
   }
 
   @override
-  double childMainAxisPosition(RenderBox child) =>
-      effectiveGeometryOfChild(child).offset.dy - constraints.scrollOffset;
+  double childMainAxisPosition(RenderBox child) => effectiveGeometryOfChild(child).offset.dy - constraints.scrollOffset;
 
   @override
-  double childCrossAxisPosition(RenderBox child) =>
-      effectiveGeometryOfChild(child).offset.dx;
+  double childCrossAxisPosition(RenderBox child) => effectiveGeometryOfChild(child).offset.dx;
 
   @override
-  void applyPaintTransform(RenderObject child, Matrix4 transform) =>
-      applyGridPaintTransform(child as RenderBox, transform);
+  void applyPaintTransform(RenderObject child, Matrix4 transform) => applyGridPaintTransform(child as RenderBox, transform);
 
   // --- GridHost ---
 
@@ -1315,19 +1256,16 @@ class RenderSliverFluidGrid extends RenderSliver
   Map<Object, double>? itemHeightsForColumns(int count) => _heightsFor(count);
 
   @override
-  Map<Object, double> nearestItemHeightsForColumns(int count) =>
-      _heightsFor(count);
+  Map<Object, double> nearestItemHeightsForColumns(int count) => _heightsFor(count);
 
   @override
-  double get gridWidth =>
-      hasSize ? constraints.crossAxisExtent : lastContentWidth;
+  double get gridWidth => hasSize ? constraints.crossAxisExtent : lastContentWidth;
 
   bool get hasSize => geometry != null;
 
   /// Sliver-paint-local point to global. Unlike RenderBox a sliver has no
   /// built-in global/local conversion, so go through the paint transform.
-  Offset _sliverLocalToGlobal(Offset point) =>
-      MatrixUtils.transformPoint(getTransformTo(null), point);
+  Offset _sliverLocalToGlobal(Offset point) => MatrixUtils.transformPoint(getTransformTo(null), point);
 
   Offset _sliverGlobalToLocal(Offset point) {
     final transform = getTransformTo(null);

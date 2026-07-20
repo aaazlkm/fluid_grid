@@ -107,10 +107,7 @@ class SliverFluidGrid<T> extends StatefulWidget implements FluidGridConfig<T> {
   State<SliverFluidGrid<T>> createState() => _SliverFluidGridState<T>();
 }
 
-class _SliverFluidGridState<T> extends State<SliverFluidGrid<T>>
-    with
-        SingleTickerProviderStateMixin,
-        FluidGridStateBase<T, SliverFluidGrid<T>> {
+class _SliverFluidGridState<T> extends State<SliverFluidGrid<T>> with SingleTickerProviderStateMixin, FluidGridStateBase<T, SliverFluidGrid<T>> {
   late final TwoFingerScaleGestureRecognizer _pinchRecognizer;
 
   @override
@@ -121,11 +118,10 @@ class _SliverFluidGridState<T> extends State<SliverFluidGrid<T>>
   @override
   void initState() {
     super.initState();
-    _pinchRecognizer =
-        TwoFingerScaleGestureRecognizer(canStart: coordinator.canStartPinch)
-          ..onStart = coordinator.onScaleStart
-          ..onUpdate = coordinator.onScaleUpdate
-          ..onEnd = coordinator.onScaleEnd;
+    _pinchRecognizer = TwoFingerScaleGestureRecognizer(canStart: coordinator.canStartPinch)
+      ..onStart = coordinator.onScaleStart
+      ..onUpdate = coordinator.onScaleUpdate
+      ..onEnd = coordinator.onScaleEnd;
   }
 
   @override
@@ -237,9 +233,7 @@ class _SliverFluidGridState<T> extends State<SliverFluidGrid<T>>
       zoomStyle: widget.zoomConfig?.style ?? GridZoomStyle.morph,
       zoomLevels: widget.zoomConfig?.zoomLevels,
       dual: zoomBuild.dual,
-      primarySlot: zoomBuild.primarySlot == ZoomSlot.none
-          ? ZoomSlot.low
-          : zoomBuild.primarySlot,
+      primarySlot: zoomBuild.primarySlot == ZoomSlot.none ? ZoomSlot.low : zoomBuild.primarySlot,
       contentRevision: 0,
       pinchEnabled: widget.zoomConfig != null,
       onPinchPointerDown: _onPinchPointerDown,

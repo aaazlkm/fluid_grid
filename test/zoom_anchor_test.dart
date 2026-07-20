@@ -60,9 +60,7 @@ class _HarnessState extends State<_Harness> {
 
     return MaterialApp(
       home: Scaffold(
-        body: widget.scrollable
-            ? ListView(controller: widget.controller, children: [grid])
-            : Align(alignment: Alignment.topLeft, child: grid),
+        body: widget.scrollable ? ListView(controller: widget.controller, children: [grid]) : Align(alignment: Alignment.topLeft, child: grid),
       ),
     );
   }
@@ -85,8 +83,7 @@ Future<void> pinch(
 
   const steps = 6;
   for (var step = 1; step <= steps; step++) {
-    final separation =
-        fromSeparation + (toSeparation - fromSeparation) * step / steps;
+    final separation = fromSeparation + (toSeparation - fromSeparation) * step / steps;
     await g1.moveTo(center - Offset(separation / 2, 0));
     await g2.moveTo(center + Offset(separation / 2, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -271,9 +268,7 @@ void main() {
       isTrue,
       reason: 'the release left a real settle to pin through',
     );
-    tester
-        .state<_HarnessState>(find.byType(_Harness))
-        .removeItem(handedTo! as String);
+    tester.state<_HarnessState>(find.byType(_Harness)).removeItem(handedTo! as String);
     await tester.pump(const Duration(milliseconds: 16));
     for (var frame = 0; frame < 6; frame++) {
       await tester.pump(const Duration(milliseconds: 16));

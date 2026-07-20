@@ -33,8 +33,7 @@ Widget _harness({
           onReorderFinished: onReorderFinished,
           onCrossAxisCountChanged: onCrossAxisCountChanged,
           itemHeight: GridItemHeight.builder((_, _) => 100),
-          itemBuilder: (context, item) =>
-              SizedBox(height: 100, child: Text(item)),
+          itemBuilder: (context, item) => SizedBox(height: 100, child: Text(item)),
         ),
       ],
     ),

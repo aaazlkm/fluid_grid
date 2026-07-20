@@ -24,8 +24,7 @@ class GridZoomConfig {
          'rubberBandFactor must be finite and non-negative',
        ),
        assert(
-         flingVelocityThreshold >= 0 &&
-             flingVelocityThreshold < double.infinity,
+         flingVelocityThreshold >= 0 && flingVelocityThreshold < double.infinity,
          'flingVelocityThreshold must be finite and non-negative',
        ),
        assert(
@@ -54,12 +53,10 @@ class GridZoomConfig {
   final List<int>? zoomLevels;
 
   /// The smallest resting column count, from [zoomLevels] when provided.
-  int get effectiveMinCrossAxisCount =>
-      (zoomLevels?.isNotEmpty ?? false) ? zoomLevels!.first : minCrossAxisCount;
+  int get effectiveMinCrossAxisCount => (zoomLevels?.isNotEmpty ?? false) ? zoomLevels!.first : minCrossAxisCount;
 
   /// The largest resting column count, from [zoomLevels] when provided.
-  int get effectiveMaxCrossAxisCount =>
-      (zoomLevels?.isNotEmpty ?? false) ? zoomLevels!.last : maxCrossAxisCount;
+  int get effectiveMaxCrossAxisCount => (zoomLevels?.isNotEmpty ?? false) ? zoomLevels!.last : maxCrossAxisCount;
 
   /// Whether [zoomLevels] satisfies its contract (non-empty, strictly
   /// ascending, all >= 1). Always true when [zoomLevels] is null. Consulted by
@@ -121,8 +118,7 @@ class GridZoomConfig {
 
   /// Whether pinch can actually change anything. A single allowed count leaves
   /// nothing to zoom between.
-  bool get isEnabled =>
-      (zoomLevels?.length ?? (maxCrossAxisCount - minCrossAxisCount + 1)) > 1;
+  bool get isEnabled => (zoomLevels?.length ?? (maxCrossAxisCount - minCrossAxisCount + 1)) > 1;
 
   @override
   bool operator ==(Object other) =>

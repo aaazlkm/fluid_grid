@@ -36,9 +36,7 @@ abstract interface class FluidGridConfig<T> {
 /// forwarding [FluidGridView] to the widget's configuration, owning the
 /// coordinator and the render body's key, and the shared lifecycle. Each State
 /// keeps only its own `build` and pinch wiring.
-mixin FluidGridStateBase<T, W extends StatefulWidget>
-    on State<W>, SingleTickerProviderStateMixin<W>
-    implements FluidGridView<T> {
+mixin FluidGridStateBase<T, W extends StatefulWidget> on State<W>, SingleTickerProviderStateMixin<W> implements FluidGridView<T> {
   /// The hosting widget's configuration (each State returns its `widget`).
   @protected
   FluidGridConfig<T> get config;
@@ -64,8 +62,7 @@ mixin FluidGridStateBase<T, W extends StatefulWidget>
   @override
   double get mainAxisSpacing => config.mainAxisSpacing;
   @override
-  EdgeInsets get resolvedPadding =>
-      config.padding.resolve(Directionality.of(context));
+  EdgeInsets get resolvedPadding => config.padding.resolve(Directionality.of(context));
   @override
   TextDirection get textDirection => Directionality.of(context);
   @override
@@ -77,13 +74,11 @@ mixin FluidGridStateBase<T, W extends StatefulWidget>
   @override
   void Function(T item)? get onReorderStarted => config.onReorderStarted;
   @override
-  void Function(GridReorderResult<T> result)? get onReorderFinished =>
-      config.onReorderFinished;
+  void Function(GridReorderResult<T> result)? get onReorderFinished => config.onReorderFinished;
   @override
   void Function(T item)? get onReorderCanceled => config.onReorderCanceled;
   @override
-  ValueChanged<int>? get onCrossAxisCountChanged =>
-      config.onCrossAxisCountChanged;
+  ValueChanged<int>? get onCrossAxisCountChanged => config.onCrossAxisCountChanged;
 
   @override
   GridHost? get host => bodyKey.currentContext?.findRenderObject() as GridHost?;
@@ -106,13 +101,7 @@ mixin FluidGridStateBase<T, W extends StatefulWidget>
       'zoomLevels must be non-empty, strictly ascending, and every value >= 1',
     );
     assert(
-      config.zoomConfig == null ||
-          (config.zoomConfig!.zoomLevels != null
-              ? config.zoomConfig!.zoomLevels!.contains(config.crossAxisCount)
-              : (config.crossAxisCount >=
-                        config.zoomConfig!.minCrossAxisCount &&
-                    config.crossAxisCount <=
-                        config.zoomConfig!.maxCrossAxisCount)),
+      config.zoomConfig == null || (config.zoomConfig!.zoomLevels != null ? config.zoomConfig!.zoomLevels!.contains(config.crossAxisCount) : (config.crossAxisCount >= config.zoomConfig!.minCrossAxisCount && config.crossAxisCount <= config.zoomConfig!.maxCrossAxisCount)),
       config.zoomConfig?.zoomLevels != null
           ? 'crossAxisCount must be one of the zoomLevels'
           : 'crossAxisCount must be within '

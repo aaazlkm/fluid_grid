@@ -48,19 +48,15 @@ class _HarnessState extends State<_Harness> {
                   zoomLevels: [3, 4, 5],
                 ),
                 idOf: (i) => i,
-                onCrossAxisCountChanged: (count) =>
-                    setState(() => _count = count),
+                onCrossAxisCountChanged: (count) => setState(() => _count = count),
                 sections: [
                   GridSection(
                     id: 's',
                     items: List.generate(widget.itemCount, (i) => i),
                   ),
                 ],
-                itemHeight: widget.measured
-                    ? const GridItemHeight.measured()
-                    : GridItemHeight.builder((_, _) => 100),
-                itemBuilder: (context, i) =>
-                    SizedBox(height: 100, child: Text('item $i')),
+                itemHeight: widget.measured ? const GridItemHeight.measured() : GridItemHeight.builder((_, _) => 100),
+                itemBuilder: (context, i) => SizedBox(height: 100, child: Text('item $i')),
               ),
             ],
           ),
@@ -70,8 +66,7 @@ class _HarnessState extends State<_Harness> {
   );
 }
 
-RenderSliverFluidGrid _grid(WidgetTester tester) => tester
-    .renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
+RenderSliverFluidGrid _grid(WidgetTester tester) => tester.renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
 
 /// Pinch-spreads around [center] so the zoom crosses 4 → 3 columns. With
 /// [driftTo], the recognizer is first warmed up with a symmetric
@@ -102,9 +97,7 @@ Future<void> _pinchTo3Columns(
   for (var step = 1; step <= steps; step++) {
     final to = driftTo == null ? 160.0 : 78.0;
     final separation = 60 + (to - 60) * step / steps;
-    final focal = driftTo == null
-        ? center
-        : Offset.lerp(center, driftTo, (step / (steps * 0.6)).clamp(0.0, 1.0))!;
+    final focal = driftTo == null ? center : Offset.lerp(center, driftTo, (step / (steps * 0.6)).clamp(0.0, 1.0))!;
     await g1.moveTo(focal - Offset(separation / 2, 0));
     await g2.moveTo(focal + Offset(separation / 2, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -136,10 +129,7 @@ void main() {
       // through the viewport: the y-pinning may have scrolled during the
       // pinch, but the whole grid stays cell-aligned.
       const stride = 400 / 3;
-      final scrolled = tester
-          .state<ScrollableState>(find.byType(Scrollable))
-          .position
-          .pixels;
+      final scrolled = tester.state<ScrollableState>(find.byType(Scrollable)).position.pixels;
       for (var i = 0; i < 9; i++) {
         final cell = i + offset!;
         final topLeft = tester.getTopLeft(find.text('item $i'));

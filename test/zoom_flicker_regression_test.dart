@@ -50,8 +50,7 @@ class _Harness extends StatefulWidget {
   final bool square;
   final int initialCount;
   final ScrollController? controller;
-  final void Function(ScrollUpdateNotification notification)?
-  onScrollNotification;
+  final void Function(ScrollUpdateNotification notification)? onScrollNotification;
 
   @override
   State<_Harness> createState() => _HarnessState();
@@ -84,10 +83,8 @@ class _HarnessState extends State<_Harness> {
                   items: [for (var i = 0; i < widget.itemCount; i++) 'item$i'],
                 ),
               ],
-              onCrossAxisCountChanged: (count) =>
-                  setState(() => _count = count),
-              itemBuilder: (context, item) =>
-                  widget.square ? _SquareTile(item) : _FixedTile(item),
+              onCrossAxisCountChanged: (count) => setState(() => _count = count),
+              itemBuilder: (context, item) => widget.square ? _SquareTile(item) : _FixedTile(item),
             ),
           ],
         ),
@@ -96,8 +93,7 @@ class _HarnessState extends State<_Harness> {
   );
 }
 
-RenderMasonryGrid gridBox(WidgetTester tester) =>
-    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid gridBox(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 void main() {
   testWidgets(
@@ -144,8 +140,7 @@ void main() {
         expect(
           (controller.offset - previousOffset).abs(),
           lessThan(60),
-          reason:
-              'zoom $zoom: the scroll correction must stay in legit per-frame range',
+          reason: 'zoom $zoom: the scroll correction must stay in legit per-frame range',
         );
         final top = tester.getTopLeft(find.text('item0').first);
         expect(
@@ -210,9 +205,7 @@ void main() {
 
       double pinError() {
         final anchorId = box.zoomAnchorId;
-        final rect = anchorId == null
-            ? null
-            : box.lastLayout?.itemRects[anchorId];
+        final rect = anchorId == null ? null : box.lastLayout?.itemRects[anchorId];
         if (rect == null) return double.infinity;
         final pinnedGlobalY = box
             .localToGlobal(
@@ -245,8 +238,7 @@ void main() {
         expect(
           pinError(),
           lessThan(3),
-          reason:
-              'settle frame $frames: the pinned point stays under the focal',
+          reason: 'settle frame $frames: the pinned point stays under the focal',
         );
         final dy = pinnedDy();
         final delta = dy - previousDy;
@@ -305,8 +297,7 @@ void main() {
       expect(
         notificationsThisPump,
         lessThanOrEqualTo(1),
-        reason:
-            'step $step: one scroll write per frame, no per-event double-correction',
+        reason: 'step $step: one scroll write per frame, no per-event double-correction',
       );
     }
 
@@ -319,9 +310,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       offsets.add(controller.offset);
     }
-    final spread =
-        offsets.reduce((a, b) => a > b ? a : b) -
-        offsets.reduce((a, b) => a < b ? a : b);
+    final spread = offsets.reduce((a, b) => a > b ? a : b) - offsets.reduce((a, b) => a < b ? a : b);
     expect(
       spread,
       lessThan(1.0),

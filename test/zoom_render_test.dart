@@ -103,11 +103,9 @@ Finder cardOf(String label) => find.ancestor(
   matching: find.byType(_WrapCard),
 );
 
-double cardWidth(WidgetTester tester, String label) =>
-    tester.getSize(cardOf(label)).width;
+double cardWidth(WidgetTester tester, String label) => tester.getSize(cardOf(label)).width;
 
-RenderMasonryGrid gridBox(WidgetTester tester) =>
-    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid gridBox(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 void main() {
   testWidgets('a static grid lays cards out at the exact column width', (
@@ -159,10 +157,7 @@ void main() {
       const solidAt = 0.18;
       final highAlpha = (t / solidAt).clamp(0.0, 1.0);
       final lowAlpha = 1 - t;
-      final alphas = tester.layers
-          .whereType<OpacityLayer>()
-          .map((layer) => layer.alpha ?? -1)
-          .toList();
+      final alphas = tester.layers.whereType<OpacityLayer>().map((layer) => layer.alpha ?? -1).toList();
       for (final groupAlpha in [highAlpha, lowAlpha]) {
         if (groupAlpha > 0 && groupAlpha < 1) {
           expect(
@@ -179,17 +174,11 @@ void main() {
       double copyScale(ZoomSlot slot) {
         final copy = find.descendant(
           of: find.byWidgetPredicate(
-            (widget) =>
-                widget is GridChild &&
-                widget.id == 'a' &&
-                widget.zoomSlot == slot,
+            (widget) => widget is GridChild && widget.id == 'a' && widget.zoomSlot == slot,
           ),
           matching: find.byType(_WrapCard),
         );
-        return tester
-            .renderObject<RenderBox>(copy)
-            .getTransformTo(gridBox(tester))
-            .storage[0];
+        return tester.renderObject<RenderBox>(copy).getTransformTo(gridBox(tester)).storage[0];
       }
 
       final expectedLowScale = crossfade.itemWidth / crossfade.lowWidth;
@@ -240,8 +229,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 16));
       final t = gridBox(tester).debugCrossfade.t;
       if (t > 0 && t < 1) sawMorph = true;
-      if (tester.layers.whereType<ImageFilterLayer>().isNotEmpty)
-        sawBlur = true;
+      if (tester.layers.whereType<ImageFilterLayer>().isNotEmpty) sawBlur = true;
     }
     expect(sawMorph, isTrue, reason: 'the programmatic morph was mid-flight');
     expect(
@@ -370,8 +358,7 @@ void main() {
     // the same spot in both layouts; the others travel.)
     Finder primaryOf(String id) => find.descendant(
       of: find.byWidgetPredicate(
-        (widget) =>
-            widget is GridChild && widget.id == id && !widget.isZoomOverlay,
+        (widget) => widget is GridChild && widget.id == id && !widget.isZoomOverlay,
       ),
       matching: find.byType(_WrapCard),
     );
@@ -396,8 +383,7 @@ void main() {
         expect(
           (current[id]! - previous[id]!).distance,
           lessThan(60),
-          reason:
-              'frame $frames, item $id: the morph and its collapse must be continuous',
+          reason: 'frame $frames, item $id: the morph and its collapse must be continuous',
         );
       }
       previous = current;
@@ -422,10 +408,7 @@ void main() {
 
     Finder copyOf(String id, {required bool overlay}) => find.descendant(
       of: find.byWidgetPredicate(
-        (widget) =>
-            widget is GridChild &&
-            widget.id == id &&
-            widget.isZoomOverlay == overlay,
+        (widget) => widget is GridChild && widget.id == id && widget.isZoomOverlay == overlay,
       ),
       matching: find.byType(_WrapCard),
     );
@@ -433,8 +416,7 @@ void main() {
     var midMorphFrames = 0;
     while (tester.binding.hasScheduledFrame && midMorphFrames < 300) {
       await tester.pump(const Duration(milliseconds: 16));
-      if (copyOf('a', overlay: true).evaluate().isEmpty)
-        break; // collapsed to single mode
+      if (copyOf('a', overlay: true).evaluate().isEmpty) break; // collapsed to single mode
       midMorphFrames++;
       final itemWidth = gridBox(tester).debugCrossfade.itemWidth;
       for (final id in const ['a', 'b', 'c', 'd']) {
@@ -453,14 +435,12 @@ void main() {
         expect(
           primary.width,
           moreOrLessEquals(itemWidth, epsilon: 0.01),
-          reason:
-              'frame $midMorphFrames, $id: primary paints at the interpolated width',
+          reason: 'frame $midMorphFrames, $id: primary paints at the interpolated width',
         );
         expect(
           secondary.width,
           moreOrLessEquals(itemWidth, epsilon: 0.01),
-          reason:
-              'frame $midMorphFrames, $id: overlay paints at the interpolated width',
+          reason: 'frame $midMorphFrames, $id: overlay paints at the interpolated width',
         );
       }
     }
@@ -487,10 +467,7 @@ void main() {
 
     Finder incomingOf(String id) => find.descendant(
       of: find.byWidgetPredicate(
-        (widget) =>
-            widget is GridChild &&
-            widget.id == id &&
-            widget.zoomSlot == ZoomSlot.low,
+        (widget) => widget is GridChild && widget.id == id && widget.zoomSlot == ZoomSlot.low,
       ),
       matching: find.byType(_WrapCard),
     );
@@ -530,8 +507,7 @@ void main() {
   testWidgets('a tap mid-morph reaches exactly one copy', (tester) async {
     final taps = <String>[];
 
-    Widget tapHarness(int count) =>
-        _Harness(crossAxisCount: count, onTapItem: taps.add);
+    Widget tapHarness(int count) => _Harness(crossAxisCount: count, onTapItem: taps.add);
 
     await tester.pumpWidget(tapHarness(2));
     await tester.pumpAndSettle();
@@ -542,8 +518,7 @@ void main() {
 
     // Both copies of an item paint at the same animated offset; the overlay
     // must be pointer-transparent.
-    final target =
-        tester.getTopLeft(find.byType(_WrapCard).first) + const Offset(10, 10);
+    final target = tester.getTopLeft(find.byType(_WrapCard).first) + const Offset(10, 10);
     await tester.tapAt(target);
     await tester.pumpAndSettle();
 

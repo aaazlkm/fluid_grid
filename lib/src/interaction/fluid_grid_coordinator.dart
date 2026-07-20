@@ -193,9 +193,7 @@ class FluidGridCoordinator<T> {
     // centre (a live pinch or an in-flight settle keeps its own anchor —
     // replacing it mid-settle would break the focal pinning's continuity).
     final host = _host;
-    if (view.zoomConfig!.style == GridZoomStyle.photos &&
-        host != null &&
-        _gestureIdle) {
+    if (view.zoomConfig!.style == GridZoomStyle.photos && host != null && _gestureIdle) {
       _captureProgrammaticAnchor(host);
     }
     animator.zoomLevel.retarget(
@@ -223,9 +221,7 @@ class FluidGridCoordinator<T> {
   /// when no scrollable is attached.
   void _captureProgrammaticAnchor(GridHost host) {
     final scrollBox = _scrollable?.context.findRenderObject();
-    final globalFocal = scrollBox is RenderBox && scrollBox.hasSize
-        ? scrollBox.localToGlobal(scrollBox.size.center(Offset.zero))
-        : host.gridLocalToGlobal(Offset(host.gridWidth / 2, 0));
+    final globalFocal = scrollBox is RenderBox && scrollBox.hasSize ? scrollBox.localToGlobal(scrollBox.size.center(Offset.zero)) : host.gridLocalToGlobal(Offset(host.gridWidth / 2, 0));
     _captureAnchor(host, globalFocal);
   }
 
@@ -313,13 +309,9 @@ class FluidGridCoordinator<T> {
     final anchorRect = host.lastLayout?.itemRects[anchorId];
     Object? nearest;
     var nearestDistance = double.infinity;
-    for (final entry
-        in host.lastLayout?.itemRects.entries ??
-            const Iterable<MapEntry<Object, Rect>>.empty()) {
+    for (final entry in host.lastLayout?.itemRects.entries ?? const Iterable<MapEntry<Object, Rect>>.empty()) {
       if (!_itemsById.containsKey(entry.key)) continue;
-      final distance = anchorRect == null
-          ? 0.0
-          : (entry.value.center - anchorRect.center).distanceSquared;
+      final distance = anchorRect == null ? 0.0 : (entry.value.center - anchorRect.center).distanceSquared;
       if (distance < nearestDistance) {
         nearestDistance = distance;
         nearest = entry.key;
@@ -361,22 +353,14 @@ class FluidGridCoordinator<T> {
   InsertionCandidate _clampHypothesis(InsertionCandidate hypothesis) {
     for (final section in view.sections) {
       if (section.id != hypothesis.sectionId) continue;
-      final limit = section.items
-          .where((item) => view.idOf(item) != _drag?.id)
-          .length;
+      final limit = section.items.where((item) => view.idOf(item) != _drag?.id).length;
       if (hypothesis.index <= limit) return hypothesis;
       return InsertionCandidate(sectionId: hypothesis.sectionId, index: limit);
     }
 
-    final fallback =
-        view.sections
-            .where((section) => section.id == _drag?.fromSectionId)
-            .firstOrNull ??
-        view.sections.firstOrNull;
+    final fallback = view.sections.where((section) => section.id == _drag?.fromSectionId).firstOrNull ?? view.sections.firstOrNull;
     if (fallback == null) return hypothesis;
-    final limit = fallback.items
-        .where((item) => view.idOf(item) != _drag?.id)
-        .length;
+    final limit = fallback.items.where((item) => view.idOf(item) != _drag?.id).length;
     return InsertionCandidate(sectionId: fallback.id, index: limit);
   }
 
@@ -446,9 +430,7 @@ class FluidGridCoordinator<T> {
     _evictExitedGhosts(result.exited);
     _invalidateHost();
 
-    if (drag != null &&
-        drag.phase == DragPhase.settling &&
-        !animator.isSettling) {
+    if (drag != null && drag.phase == DragPhase.settling && !animator.isSettling) {
       _finishSettle();
       return;
     }
@@ -459,9 +441,7 @@ class FluidGridCoordinator<T> {
   }
 
   double _tickDelta(Duration elapsed) {
-    final dtRaw = _lastTick == Duration.zero
-        ? 1 / 60
-        : (elapsed - _lastTick).inMicroseconds / Duration.microsecondsPerSecond;
+    final dtRaw = _lastTick == Duration.zero ? 1 / 60 : (elapsed - _lastTick).inMicroseconds / Duration.microsecondsPerSecond;
     _lastTick = elapsed;
     return dtRaw.clamp(0.0, 1 / 30);
   }
@@ -547,11 +527,7 @@ class FluidGridCoordinator<T> {
   // --- Drag ---
 
   Drag? onDragStart(Object id, Offset globalPosition) {
-    if (!view.reorderEnabled ||
-        _drag != null ||
-        _pinch != null ||
-        animator.zoomActive ||
-        _activePointers >= 2) {
+    if (!view.reorderEnabled || _drag != null || _pinch != null || animator.zoomActive || _activePointers >= 2) {
       return null;
     }
 
@@ -608,8 +584,7 @@ class FluidGridCoordinator<T> {
     final host = _host;
     if (drag == null || host == null) return;
 
-    if ((host.contentWidth - drag.contentWidth).abs() > 0.5 ||
-        effectiveCrossAxisCount != drag.crossAxisCount) {
+    if ((host.contentWidth - drag.contentWidth).abs() > 0.5 || effectiveCrossAxisCount != drag.crossAxisCount) {
       _abortDrag(notify: true);
       return;
     }
@@ -756,12 +731,10 @@ class FluidGridCoordinator<T> {
   /// the frozen release focal while the settle finishes.
   Offset? get _activeFocalGlobal => _pinch?.lastFocalGlobal ?? _settleFocal;
 
-  bool canStartPinch() =>
-      (view.zoomConfig?.isEnabled ?? false) && _drag == null;
+  bool canStartPinch() => (view.zoomConfig?.isEnabled ?? false) && _drag == null;
 
   void onPointerDown() => _activePointers++;
-  void onPointerUp() =>
-      _activePointers = _activePointers > 0 ? _activePointers - 1 : 0;
+  void onPointerUp() => _activePointers = _activePointers > 0 ? _activePointers - 1 : 0;
 
   void onScaleStart(ScaleStartDetails details) {
     // A genuine pinch has two fingers. The scale recognizer RESTARTS after its
@@ -886,11 +859,7 @@ class FluidGridCoordinator<T> {
     final host = _host;
     final anchorId = host?.zoomAnchorId;
     final focalGlobal = _activeFocalGlobal;
-    final photosPinch =
-        view.zoomConfig?.style == GridZoomStyle.photos &&
-        host != null &&
-        anchorId != null &&
-        focalGlobal != null;
+    final photosPinch = view.zoomConfig?.style == GridZoomStyle.photos && host != null && anchorId != null && focalGlobal != null;
 
     for (final count in entering) {
       // Per-pointer scale updates make the zoom (and so the pair) flap within
@@ -951,15 +920,12 @@ class FluidGridCoordinator<T> {
 
     final isRtl = view.textDirection == TextDirection.rtl;
     int columnOf(double left) {
-      final x = isRtl
-          ? host.gridWidth - padding.right - columnWidth - left
-          : left - padding.left;
+      final x = isRtl ? host.gridWidth - padding.right - columnWidth - left : left - padding.left;
       return (x / stride).round();
     }
 
     final canonicalColumn = columnOf(canonicalRect.left);
-    final desiredLeft =
-        host.globalToGridLocal(focalGlobal).dx - fraction.dx * columnWidth;
+    final desiredLeft = host.globalToGridLocal(focalGlobal).dx - fraction.dx * columnWidth;
     final targetColumn = columnOf(desiredLeft).clamp(0, count - 1);
     return (targetColumn - canonicalColumn) % count;
   }
@@ -974,9 +940,7 @@ class FluidGridCoordinator<T> {
     int count, {
     bool canonical = false,
   }) {
-    final heights =
-        host.itemHeightsForColumns(count) ??
-        host.nearestItemHeightsForColumns(count);
+    final heights = host.itemHeightsForColumns(count) ?? host.nearestItemHeightsForColumns(count);
     return computeMasonryLayout(
       _specFor(
         host.gridWidth,
@@ -992,12 +956,8 @@ class FluidGridCoordinator<T> {
                     height: heights[view.idOf(item)] ?? 0,
                   ),
               ],
-              headerHeight:
-                  host.headerHeightOf(section.id) *
-                  (1 - animator.collapseOf(section.id)),
-              footerHeight:
-                  host.footerHeightOf(section.id) *
-                  (1 - animator.collapseOf(section.id)),
+              headerHeight: host.headerHeightOf(section.id) * (1 - animator.collapseOf(section.id)),
+              footerHeight: host.footerHeightOf(section.id) * (1 - animator.collapseOf(section.id)),
               leadingCells: canonical ? 0 : cellOffsets.of(count, section.id),
             ),
         ],
@@ -1048,20 +1008,16 @@ class FluidGridCoordinator<T> {
     if (scrollable == null) return;
 
     final predictedLocalY = rect.top + rect.height * fraction.dy;
-    final predictedGlobalY = host
-        .gridLocalToGlobal(Offset(0, predictedLocalY))
-        .dy;
+    final predictedGlobalY = host.gridLocalToGlobal(Offset(0, predictedLocalY)).dy;
 
     final position = scrollable.position;
-    final target = (position.pixels + (predictedGlobalY - focalGlobal.dy))
-        .clamp(position.minScrollExtent, position.maxScrollExtent);
+    final target = (position.pixels + (predictedGlobalY - focalGlobal.dy)).clamp(position.minScrollExtent, position.maxScrollExtent);
     if ((target - position.pixels).abs() > 0.01) {
       position.jumpTo(target);
     }
   }
 
-  void onScaleEnd(ScaleEndDetails details) =>
-      _endPinch(scaleVelocity: details.scaleVelocity);
+  void onScaleEnd(ScaleEndDetails details) => _endPinch(scaleVelocity: details.scaleVelocity);
 
   void _endPinch({required double scaleVelocity}) {
     final pinch = _pinch;

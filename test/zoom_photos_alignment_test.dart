@@ -58,8 +58,7 @@ class _EchoHarnessState extends State<_EchoHarness> {
                   style: GridZoomStyle.photos,
                 ),
                 idOf: (item) => item,
-                onCrossAxisCountChanged: (count) =>
-                    setState(() => _count = count),
+                onCrossAxisCountChanged: (count) => setState(() => _count = count),
                 sections: const [
                   GridSection(id: 's', items: ['a', 'b', 'c', 'd', 'e', 'f']),
                 ],
@@ -73,13 +72,11 @@ class _EchoHarnessState extends State<_EchoHarness> {
   );
 }
 
-RenderMasonryGrid _grid(WidgetTester tester) =>
-    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid _grid(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 Finder _slotOf(String id, ZoomSlot slot) => find.descendant(
   of: find.byWidgetPredicate(
-    (widget) =>
-        widget is GridChild && widget.id == id && widget.zoomSlot == slot,
+    (widget) => widget is GridChild && widget.id == id && widget.zoomSlot == slot,
   ),
   matching: find.byType(_SquareTile),
 );

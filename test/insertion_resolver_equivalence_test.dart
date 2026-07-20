@@ -33,22 +33,18 @@ InsertionCandidate? bruteForceResolve({
         GridSectionSpec(
           id: order.id,
           items: [
-            for (final itemId in order.itemIds)
-              GridItemSpec(id: itemId, height: heights[itemId] ?? 0),
+            for (final itemId in order.itemIds) GridItemSpec(id: itemId, height: heights[itemId] ?? 0),
           ],
           headerHeight: chromeById[order.id]?.headerHeight ?? 0,
           footerHeight: chromeById[order.id]?.footerHeight ?? 0,
-          emptyExtent: order.itemIds.isEmpty
-              ? (chromeById[order.id]?.emptyExtent ?? 0)
-              : 0,
+          emptyExtent: order.itemIds.isEmpty ? (chromeById[order.id]?.emptyExtent ?? 0) : 0,
           leadingCells: chromeById[order.id]?.leadingCells ?? 0,
         ),
     ],
   );
 
   final draggedHeight = heights[draggedId] ?? 0;
-  final draggedCentre =
-      draggedTopLeft + Offset(template.columnWidth / 2, draggedHeight / 2);
+  final draggedCentre = draggedTopLeft + Offset(template.columnWidth / 2, draggedHeight / 2);
 
   InsertionCandidate? best;
   var bestDistance = double.infinity;
@@ -60,9 +56,7 @@ InsertionCandidate? bruteForceResolve({
         for (final other in sections)
           SectionOrder(
             id: other.id,
-            itemIds: other.id == section.id
-                ? ([...other.itemIds]..insert(index, draggedId))
-                : other.itemIds,
+            itemIds: other.id == section.id ? ([...other.itemIds]..insert(index, draggedId)) : other.itemIds,
           ),
       ];
 
@@ -82,9 +76,7 @@ InsertionCandidate? bruteForceResolve({
     }
   }
 
-  if (current != null &&
-      currentDistance.isFinite &&
-      currentDistance - bestDistance <= hysteresis) {
+  if (current != null && currentDistance.isFinite && currentDistance - bestDistance <= hysteresis) {
     return current;
   }
   return best;
@@ -117,12 +109,8 @@ void main() {
           chrome.add(
             SectionChrome(
               id: sectionId,
-              headerHeight: random.nextBool()
-                  ? random.nextInt(60).toDouble()
-                  : 0,
-              footerHeight: random.nextBool()
-                  ? random.nextInt(40).toDouble()
-                  : 0,
+              headerHeight: random.nextBool() ? random.nextInt(60).toDouble() : 0,
+              footerHeight: random.nextBool() ? random.nextInt(40).toDouble() : 0,
               emptyExtent: random.nextInt(80).toDouble(),
               // Half the trials rest on a re-anchored (offset) layout; values
               // beyond crossAxisCount exercise normalization.
@@ -146,9 +134,7 @@ void main() {
             right: random.nextInt(24).toDouble(),
             top: random.nextInt(24).toDouble(),
           ),
-          textDirection: random.nextBool()
-              ? TextDirection.ltr
-              : TextDirection.rtl,
+          textDirection: random.nextBool() ? TextDirection.ltr : TextDirection.rtl,
         );
 
         final draggedTopLeft = Offset(

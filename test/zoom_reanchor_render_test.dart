@@ -62,8 +62,7 @@ class _HarnessState extends State<_Harness> {
                   zoomLevels: [3, 4, 5],
                 ),
                 idOf: (item) => item,
-                onCrossAxisCountChanged: (value) =>
-                    setState(() => count = value),
+                onCrossAxisCountChanged: (value) => setState(() => count = value),
                 onReorderFinished: widget.onReorderFinished,
                 sections: [GridSection(id: 's', items: items)],
                 itemBuilder: (context, item) => _Tile(item),
@@ -76,14 +75,12 @@ class _HarnessState extends State<_Harness> {
   );
 }
 
-RenderMasonryGrid _grid(WidgetTester tester) =>
-    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid _grid(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 /// The painted rect of [id]'s tile. During a crossfade two copies exist; for
 /// the ANCHOR both are pinned to the same fraction point and painted at the
 /// same interpolated width, so either copy measures the same thing.
-Rect _tileRect(WidgetTester tester, String id) =>
-    tester.getRect(find.widgetWithText(_Tile, id).first);
+Rect _tileRect(WidgetTester tester, String id) => tester.getRect(find.widgetWithText(_Tile, id).first);
 
 /// Scale gestures accept only after a pointer travels past the touch slop,
 /// so with an asymmetric (drifting) gesture the anchor would be captured

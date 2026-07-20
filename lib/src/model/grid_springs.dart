@@ -32,36 +32,32 @@ class GridSprings {
   /// Siblings shifting out of the way, and items moving after a data change.
   /// Slightly bouncy (bounce 0.15, i.e. damping ratio ~0.85) so the motion
   /// reads as lively.
-  static final SpringDescription defaultReflow =
-      SpringDescription.withDurationAndBounce(
-        duration: const Duration(milliseconds: 314),
-        bounce: 0.15,
-      );
+  static final SpringDescription defaultReflow = SpringDescription.withDurationAndBounce(
+    duration: const Duration(milliseconds: 314),
+    bounce: 0.15,
+  );
 
   /// The dragged item snapping into its slot on release. Critically damped
   /// (bounce 0) so it never overshoots the drop target.
-  static final SpringDescription defaultSettle =
-      SpringDescription.withDurationAndBounce(
-        duration: const Duration(milliseconds: 300),
-        bounce: 0.0,
-      );
+  static final SpringDescription defaultSettle = SpringDescription.withDurationAndBounce(
+    duration: const Duration(milliseconds: 300),
+    bounce: 0,
+  );
 
   /// Item positions following the fingers while a pinch is in flight. Fast and
   /// critically damped so cards track near-1:1, while still absorbing a one-line
   /// text-rewrap height step over a couple of frames rather than snapping.
-  static final SpringDescription defaultZoomTracking =
-      SpringDescription.withDurationAndBounce(
-        duration: const Duration(milliseconds: 140),
-      );
+  static final SpringDescription defaultZoomTracking = SpringDescription.withDurationAndBounce(
+    duration: const Duration(milliseconds: 140),
+  );
 
   /// The whole grid settling to the resolved column count when the pinch ends.
   /// Critically damped (bounce 0) so the layout arrives without overshoot. The
   /// duration is the single knob for how long the settle takes.
-  static final SpringDescription defaultZoomSettle =
-      SpringDescription.withDurationAndBounce(
-        duration: const Duration(milliseconds: 300),
-        bounce: 0.0,
-      );
+  static final SpringDescription defaultZoomSettle = SpringDescription.withDurationAndBounce(
+    duration: const Duration(milliseconds: 300),
+    bounce: 0,
+  );
 
   final SpringDescription? _reflow;
 

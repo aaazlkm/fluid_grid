@@ -11,8 +11,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 
 /// Builds the widget shown for an item while it is held by the pointer.
-typedef LiftedItemBuilder<T> =
-    Widget Function(BuildContext context, T item, Widget child);
+typedef LiftedItemBuilder<T> = Widget Function(BuildContext context, T item, Widget child);
 
 /// A masonry grid whose items animate implicitly and can be dragged to reorder,
 /// including from one section into another.
@@ -104,8 +103,7 @@ class FluidGrid<T> extends StatefulWidget implements FluidGridConfig<T> {
   State<FluidGrid<T>> createState() => _FluidGridState<T>();
 }
 
-class _FluidGridState<T> extends State<FluidGrid<T>>
-    with SingleTickerProviderStateMixin, FluidGridStateBase<T, FluidGrid<T>> {
+class _FluidGridState<T> extends State<FluidGrid<T>> with SingleTickerProviderStateMixin, FluidGridStateBase<T, FluidGrid<T>> {
   @override
   FluidGridConfig<T> get config => widget;
 
@@ -115,9 +113,7 @@ class _FluidGridState<T> extends State<FluidGrid<T>>
   Widget build(BuildContext context) {
     final drag = coordinator.drag;
     final (:orderById, :zoomBuild) = prepareBuild();
-    final overlaySlot = zoomBuild.primarySlot == ZoomSlot.low
-        ? ZoomSlot.high
-        : ZoomSlot.low;
+    final overlaySlot = zoomBuild.primarySlot == ZoomSlot.low ? ZoomSlot.high : ZoomSlot.low;
 
     final children = <Widget>[
       // Painted first so a fading item never covers a live one.
@@ -237,18 +233,15 @@ class _FluidGridState<T> extends State<FluidGrid<T>>
     onPointerCancel: (_) => coordinator.onPointerUp(),
     child: RawGestureDetector(
       gestures: {
-        TwoFingerScaleGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<
-              TwoFingerScaleGestureRecognizer
-            >(
-              () => TwoFingerScaleGestureRecognizer(
-                canStart: coordinator.canStartPinch,
-              ),
-              (instance) => instance
-                ..onStart = coordinator.onScaleStart
-                ..onUpdate = coordinator.onScaleUpdate
-                ..onEnd = coordinator.onScaleEnd,
-            ),
+        TwoFingerScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<TwoFingerScaleGestureRecognizer>(
+          () => TwoFingerScaleGestureRecognizer(
+            canStart: coordinator.canStartPinch,
+          ),
+          (instance) => instance
+            ..onStart = coordinator.onScaleStart
+            ..onUpdate = coordinator.onScaleUpdate
+            ..onEnd = coordinator.onScaleEnd,
+        ),
       },
       // Let the item drag recognizers and the ancestor scrollable also see the
       // pointers; the scale recognizer only wins for a real two-finger pinch.

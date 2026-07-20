@@ -83,9 +83,7 @@ double zoomLevelForScale({
   // Re-applying the rubber-band curve here would compress that overshoot and
   // snap the grid back under the fingers before they have moved.
   if (scale == 1) return baseZoom;
-  final raw = scale <= 0
-      ? config.effectiveMaxCrossAxisCount.toDouble()
-      : baseZoom / scale;
+  final raw = scale <= 0 ? config.effectiveMaxCrossAxisCount.toDouble() : baseZoom / scale;
   return _rubberBand(
     raw,
     min: config.effectiveMinCrossAxisCount.toDouble(),
@@ -111,8 +109,7 @@ double _rubberBand(
 /// saturates toward `factor` as `d` → ∞, so `factor` bounds how far the
 /// overshoot is ever allowed to travel. With the intended `factor` in `[0, 1]`
 /// the result stays below `d`.
-double _resist(double distance, double factor) =>
-    factor * distance / (1 + distance);
+double _resist(double distance, double factor) => factor * distance / (1 + distance);
 
 /// The integer column count a gesture settles to when the fingers lift.
 ///
@@ -225,10 +222,6 @@ Offset anchorFractionForPoint({
   required Rect anchorRect,
   required Offset localPoint,
 }) => Offset(
-  anchorRect.width == 0
-      ? 0
-      : (localPoint.dx - anchorRect.left) / anchorRect.width,
-  anchorRect.height == 0
-      ? 0
-      : (localPoint.dy - anchorRect.top) / anchorRect.height,
+  anchorRect.width == 0 ? 0 : (localPoint.dx - anchorRect.left) / anchorRect.width,
+  anchorRect.height == 0 ? 0 : (localPoint.dy - anchorRect.top) / anchorRect.height,
 );

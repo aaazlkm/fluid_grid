@@ -90,21 +90,19 @@ void main() {
     test('offsets are rigid: the delta between two items scales by s_K', () {
       const lerped = Rect.fromLTWH(30, 140, 150, 150);
 
-      ({Offset offset, double scale}) geometryOf(Rect rect) =>
-          photosCanvasGeometry(
-            endpointRect: rect,
-            anchorEndpointRect: anchorRect,
-            anchorLerpedRect: lerped,
-            anchorFraction: fraction,
-            endpointWidth: 200,
-            itemWidth: 150,
-            focalX: focalX,
-          )!;
+      ({Offset offset, double scale}) geometryOf(Rect rect) => photosCanvasGeometry(
+        endpointRect: rect,
+        anchorEndpointRect: anchorRect,
+        anchorLerpedRect: lerped,
+        anchorFraction: fraction,
+        endpointWidth: 200,
+        itemWidth: 150,
+        focalX: focalX,
+      )!;
 
       final a = geometryOf(anchorRect);
       final b = geometryOf(otherRect);
-      final expectedDelta =
-          (otherRect.topLeft - anchorRect.topLeft) * (150 / 200);
+      final expectedDelta = (otherRect.topLeft - anchorRect.topLeft) * (150 / 200);
       expect((b.offset - a.offset - expectedDelta).distance, lessThan(1e-9));
       expect(a.scale, moreOrLessEquals(150 / 200));
       expect(b.scale, moreOrLessEquals(150 / 200));

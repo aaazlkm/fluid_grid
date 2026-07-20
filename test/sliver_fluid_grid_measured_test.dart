@@ -44,9 +44,7 @@ Widget _harness({
               crossAxisCount: crossAxisCount,
               reorderEnabled: reorderEnabled,
               zoomConfig: zoomConfig,
-              itemHeight: measured
-                  ? const GridItemHeight.measured()
-                  : GridItemHeight.builder((i, _) => _heightOf(i)),
+              itemHeight: measured ? const GridItemHeight.measured() : GridItemHeight.builder((i, _) => _heightOf(i)),
               itemBuilder: (context, i) {
                 built?.add(i);
                 return SizedBox(height: _heightOf(i), child: Text('item $i'));
@@ -59,13 +57,9 @@ Widget _harness({
   ),
 );
 
-RenderSliverFluidGrid _renderObject(WidgetTester tester) => tester
-    .renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
+RenderSliverFluidGrid _renderObject(WidgetTester tester) => tester.renderObject<RenderSliverFluidGrid>(find.byType(SliverMasonryGridBody));
 
-double _maxExtent(WidgetTester tester) => tester
-    .state<ScrollableState>(find.byType(Scrollable))
-    .position
-    .maxScrollExtent;
+double _maxExtent(WidgetTester tester) => tester.state<ScrollableState>(find.byType(Scrollable)).position.maxScrollExtent;
 
 void main() {
   testWidgets('builds only items near the viewport, not all of them', (
@@ -192,8 +186,7 @@ void main() {
                     dragStartDelay: const Duration(milliseconds: 300),
                     itemHeight: const GridItemHeight.measured(),
                     onReorderFinished: (r) => result = r,
-                    itemBuilder: (context, i) =>
-                        SizedBox(height: 120, child: Text('item $i')),
+                    itemBuilder: (context, i) => SizedBox(height: 120, child: Text('item $i')),
                   ),
                 ],
               ),
@@ -259,8 +252,7 @@ void main() {
                         ),
                         onCrossAxisCountChanged: (c) => newCount = c,
                         itemHeight: const GridItemHeight.measured(),
-                        itemBuilder: (context, i) =>
-                            SizedBox(height: 120, child: Text('item $i')),
+                        itemBuilder: (context, i) => SizedBox(height: 120, child: Text('item $i')),
                       ),
                     ],
                   ),
