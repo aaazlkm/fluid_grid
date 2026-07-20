@@ -86,8 +86,7 @@ mixin FluidGridStateBase<T, W extends StatefulWidget>
       config.onCrossAxisCountChanged;
 
   @override
-  GridHost? get host =>
-      bodyKey.currentContext?.findRenderObject() as GridHost?;
+  GridHost? get host => bodyKey.currentContext?.findRenderObject() as GridHost?;
 
   @override
   void requestRebuild() {
@@ -114,7 +113,10 @@ mixin FluidGridStateBase<T, W extends StatefulWidget>
                         config.zoomConfig!.minCrossAxisCount &&
                     config.crossAxisCount <=
                         config.zoomConfig!.maxCrossAxisCount)),
-      'crossAxisCount must be one of the allowed zoom levels',
+      config.zoomConfig?.zoomLevels != null
+          ? 'crossAxisCount must be one of the zoomLevels'
+          : 'crossAxisCount must be within '
+                '[minCrossAxisCount, maxCrossAxisCount]',
     );
     coordinator = FluidGridCoordinator<T>(view: this, vsync: this);
   }
