@@ -63,8 +63,7 @@ class PhotoGalleryPage extends StatefulWidget {
 }
 
 class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
-  static const _minColumns = 1;
-  static const _maxColumns = 18;
+  static const _zoomLevels = [1, 3, 5, 7, 9, 11, 13, 15];
 
   int _columns = 3;
   GridZoomStyle _zoomStyle = GridZoomStyle.morph;
@@ -170,8 +169,9 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
         bottom: _ControlsBar(
           style: _zoomStyle,
           columns: _columns,
-          minColumns: _minColumns,
-          maxColumns: _maxColumns,
+          minColumns: _zoomLevels.first,
+          maxColumns: _zoomLevels.last,
+          levels: _zoomLevels,
           onStyleChanged: (style) => setState(() => _zoomStyle = style),
           onColumnsChanged: (columns) => setState(() => _columns = columns),
         ),
@@ -189,9 +189,7 @@ class _PhotoGalleryPageState extends State<PhotoGalleryPage> {
             padding: const EdgeInsets.symmetric(horizontal: 2),
             idOf: (photo) => photo.id,
             zoomConfig: GridZoomConfig(
-              minCrossAxisCount: _minColumns,
-              maxCrossAxisCount: _maxColumns,
-              zoomLevels: const [1, 3, 5, 7, 9, 11, 13, 15],
+              zoomLevels: _zoomLevels,
               style: _zoomStyle,
             ),
             onCrossAxisCountChanged: (count) =>
