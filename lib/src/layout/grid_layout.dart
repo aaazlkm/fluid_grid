@@ -21,7 +21,8 @@ class GridSectionSpec {
     this.headerHeight = 0,
     this.footerHeight = 0,
     this.emptyExtent = 0,
-  });
+    this.leadingCells = 0,
+  }) : assert(leadingCells >= 0, 'leadingCells must be non-negative');
 
   final Object id;
   final List<GridItemSpec> items;
@@ -31,6 +32,15 @@ class GridSectionSpec {
   /// Extent reserved between header and footer while the section has no items.
   /// Used to keep an empty section droppable during a drag.
   final double emptyExtent;
+
+  /// Leading grid cells left empty at the top of this section, normalized by
+  /// the solver to `leadingCells % crossAxisCount` (whole rows are equivalent
+  /// to a scroll shift and carry no meaning). The section packs as if this
+  /// many phantom copies of its first item preceded item 0, so for uniform
+  /// heights item `i` lands in column `(i + leadingCells) % crossAxisCount`.
+  /// This is how the photos zoom re-anchors the grid on the pinched item, iOS
+  /// style. Ignored while [items] is empty (the [emptyExtent] path wins).
+  final int leadingCells;
 }
 
 /// Everything the solver needs. Contains no widgets — heights are measured by
@@ -56,7 +66,8 @@ class GridLayoutSpec {
   final EdgeInsets padding;
   final TextDirection textDirection;
 
-  double get contentWidth => (width - padding.horizontal).clamp(0.0, double.infinity);
+  double get contentWidth =>
+      (width - padding.horizontal).clamp(0.0, double.infinity);
 
   double get columnWidth => columnWidthFor(crossAxisCount);
 
@@ -103,7 +114,11 @@ class SectionGeometry {
   final double contentTop;
   final double contentBottom;
 
-  static SectionGeometry? lerp(SectionGeometry? a, SectionGeometry? b, double t) {
+  static SectionGeometry? lerp(
+    SectionGeometry? a,
+    SectionGeometry? b,
+    double t,
+  ) {
     if (a == null) return b;
     if (b == null) return a;
     return SectionGeometry(
@@ -130,6 +145,16 @@ class GridLayoutResult {
   final Map<Object, SectionGeometry> sections;
 }
 
+/// Reduces a leading-cell count to its meaningful range `[0, crossAxisCount)`.
+///
+/// Whole-row shifts are equivalent to a scroll offset, so only the remainder
+/// matters. Dart's `%` with a positive divisor is already non-negative; the
+/// guard covers a degenerate column count.
+int normalizeLeadingCells(int leadingCells, int crossAxisCount) {
+  if (crossAxisCount <= 0) return 0;
+  return leadingCells % crossAxisCount;
+}
+
 /// Lays sections out vertically; within each section, items are placed into the
 /// column whose current bottom is highest up (ties break to the lowest column
 /// index), which is the same shortest-column rule `MasonryGridView` uses.
@@ -141,7 +166,10 @@ GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
   // index into it while placing the first item. The widget guarantees a
   // positive count; this asserts the solver's own precondition so a stray 0
   // fails loudly at the source instead of as an opaque RangeError.
-  assert(spec.crossAxisCount > 0, 'crossAxisCount must be positive; got ${spec.crossAxisCount}');
+  assert(
+    spec.crossAxisCount > 0,
+    'crossAxisCount must be positive; got ${spec.crossAxisCount}',
+  );
   final itemRects = <Object, Rect>{};
   final sections = <Object, SectionGeometry>{};
 
@@ -161,7 +189,12 @@ GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
 
   for (final section in spec.sections) {
     final sectionTop = y;
-    final headerRect = Rect.fromLTWH(spec.padding.left, y, contentWidth, section.headerHeight);
+    final headerRect = Rect.fromLTWH(
+      spec.padding.left,
+      y,
+      contentWidth,
+      section.headerHeight,
+    );
     y += section.headerHeight;
 
     final contentTop = y;
@@ -172,18 +205,43 @@ GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
     } else {
       // Seeded one spacing above the content top so the first item in each
       // column lands exactly at contentTop.
-      final columnBottoms = List<double>.filled(spec.crossAxisCount, contentTop - spec.mainAxisSpacing);
+      final columnBottoms = List<double>.filled(
+        spec.crossAxisCount,
+        contentTop - spec.mainAxisSpacing,
+      );
+
+      // Leading blocked cells: pack as if `blocked` phantom copies of the
+      // first item preceded item 0. Seeding the blocked columns to the phantom
+      // bottom reproduces that packing without emitting phantom rects — the
+      // first real item lands at column `blocked`, and with uniform heights
+      // the whole section shifts by exactly `blocked` cells with wrap-around.
+      final blocked = normalizeLeadingCells(
+        section.leadingCells,
+        spec.crossAxisCount,
+      );
+      if (blocked > 0) {
+        final seedHeight = section.items.first.height;
+        for (var c = 0; c < blocked; c++) {
+          columnBottoms[c] = contentTop + seedHeight;
+        }
+      }
 
       for (final item in section.items) {
         var column = 0;
         for (var c = 1; c < spec.crossAxisCount; c++) {
-          if (columnBottoms[c] < columnBottoms[column] - precisionErrorTolerance) {
+          if (columnBottoms[c] <
+              columnBottoms[column] - precisionErrorTolerance) {
             column = c;
           }
         }
 
         final top = columnBottoms[column] + spec.mainAxisSpacing;
-        itemRects[item.id] = Rect.fromLTWH(xOf(column), top, columnWidth, item.height);
+        itemRects[item.id] = Rect.fromLTWH(
+          xOf(column),
+          top,
+          columnWidth,
+          item.height,
+        );
         columnBottoms[column] = top + item.height;
       }
 
@@ -191,7 +249,12 @@ GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
     }
 
     y = contentBottom;
-    final footerRect = Rect.fromLTWH(spec.padding.left, y, contentWidth, section.footerHeight);
+    final footerRect = Rect.fromLTWH(
+      spec.padding.left,
+      y,
+      contentWidth,
+      section.footerHeight,
+    );
     y += section.footerHeight;
 
     sections[section.id] = SectionGeometry(
@@ -221,7 +284,11 @@ GridLayoutResult computeMasonryLayout(GridLayoutSpec spec) {
 ///
 /// [t] may fall slightly outside `[0, 1]` while rubber-banding at a range edge;
 /// the lerps simply extrapolate.
-GridLayoutResult lerpGridLayoutResult(GridLayoutResult a, GridLayoutResult b, double t) {
+GridLayoutResult lerpGridLayoutResult(
+  GridLayoutResult a,
+  GridLayoutResult b,
+  double t,
+) {
   final itemRects = <Object, Rect>{};
   for (final id in a.itemRects.keys) {
     final ra = a.itemRects[id];

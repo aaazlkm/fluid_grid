@@ -1,7 +1,7 @@
 import 'package:fluid_grid/fluid_grid.dart';
 import 'package:fluid_grid/src/layout/render_masonry_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show OpacityLayer;
+import 'package:flutter/rendering.dart' show ImageFilterLayer, OpacityLayer;
 import 'package:flutter_test/flutter_test.dart';
 
 /// A card whose height depends on its width: the text wraps to more lines as
@@ -51,14 +51,12 @@ class _CounterCardState extends State<_CounterCard> {
 class _Harness extends StatelessWidget {
   const _Harness({
     required this.crossAxisCount,
-    this.crossfade = true,
     this.springs = const GridSprings(),
     this.buildCard,
     this.onTapItem,
   });
 
   final int crossAxisCount;
-  final bool crossfade;
   final GridSprings springs;
   final Widget Function(String item)? buildCard;
   final void Function(String item)? onTapItem;
@@ -80,7 +78,7 @@ class _Harness extends StatelessWidget {
                 mainAxisSpacing: 8,
                 reorderEnabled: false,
                 springs: springs,
-                zoomConfig: GridZoomConfig(crossfade: crossfade),
+                zoomConfig: const GridZoomConfig(style: GridZoomStyle.morph),
                 idOf: (item) => item,
                 sections: const [
                   GridSection(id: 's', items: ['a', 'b', 'c', 'd']),
@@ -100,14 +98,21 @@ class _Harness extends StatelessWidget {
   );
 }
 
-Finder cardOf(String label) => find.ancestor(of: find.text('$label ' * 8), matching: find.byType(_WrapCard));
+Finder cardOf(String label) => find.ancestor(
+  of: find.text('$label ' * 8),
+  matching: find.byType(_WrapCard),
+);
 
-double cardWidth(WidgetTester tester, String label) => tester.getSize(cardOf(label)).width;
+double cardWidth(WidgetTester tester, String label) =>
+    tester.getSize(cardOf(label)).width;
 
-RenderMasonryGrid gridBox(WidgetTester tester) => tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+RenderMasonryGrid gridBox(WidgetTester tester) =>
+    tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
 
 void main() {
-  testWidgets('a static grid lays cards out at the exact column width', (tester) async {
+  testWidgets('a static grid lays cards out at the exact column width', (
+    tester,
+  ) async {
     await tester.pumpWidget(const _Harness(crossAxisCount: 2));
     await tester.pumpAndSettle();
 
@@ -117,90 +122,146 @@ void main() {
     expect(find.byType(_WrapCard), findsNWidgets(4));
   });
 
-  testWidgets('crossfades two endpoint renderings instead of re-wrapping text live', (tester) async {
+  testWidgets(
+    'crossfades two endpoint renderings instead of re-wrapping text live',
+    (tester) async {
+      await tester.pumpWidget(const _Harness(crossAxisCount: 2));
+      await tester.pumpAndSettle();
+
+      // Drop to a single column: the settle spring morphs the layout.
+      await tester.pumpWidget(const _Harness(crossAxisCount: 1));
+      await tester.pump(const Duration(milliseconds: 60));
+
+      // Every item exists twice mid-morph: the outgoing and incoming renderings.
+      final cards = find.byType(_WrapCard);
+      expect(cards, findsNWidgets(8));
+
+      // Each copy is laid out at an exact endpoint width — never an intermediate
+      // one. That is the "no live re-wrap" contract.
+      for (final element in cards.evaluate()) {
+        final width = (element.renderObject! as RenderBox).size.width;
+        expect(
+          [196.0, 400.0].any((endpoint) => (width - endpoint).abs() < 0.01),
+          isTrue,
+          reason: 'copy width $width must be an endpoint width',
+        );
+      }
+
+      // Photos layering: the incoming (high) canvas ramps to solid by t = 0.4,
+      // the outgoing (low) canvas ghosts out above it. Each group's fractional
+      // alpha appears as at most one shared OpacityLayer; a solid group paints
+      // direct with none. No per-item opacity layers.
+      final crossfade = gridBox(tester).debugCrossfade;
+      expect(crossfade.t, greaterThan(0));
+      expect(crossfade.t, lessThan(1));
+
+      final t = crossfade.t;
+      const solidAt = 0.18;
+      final highAlpha = (t / solidAt).clamp(0.0, 1.0);
+      final lowAlpha = 1 - t;
+      final alphas = tester.layers
+          .whereType<OpacityLayer>()
+          .map((layer) => layer.alpha ?? -1)
+          .toList();
+      for (final groupAlpha in [highAlpha, lowAlpha]) {
+        if (groupAlpha > 0 && groupAlpha < 1) {
+          expect(
+            alphas,
+            contains((groupAlpha * 255).round()),
+            reason: 'a translucent canvas fades as one group',
+          );
+        }
+      }
+
+      // Both renditions scale from their endpoint width to the same interpolated
+      // width, so the pair shares one painted tile size — the crossfade swaps
+      // resolution in place instead of blending two differently-sized grids.
+      double copyScale(ZoomSlot slot) {
+        final copy = find.descendant(
+          of: find.byWidgetPredicate(
+            (widget) =>
+                widget is GridChild &&
+                widget.id == 'a' &&
+                widget.zoomSlot == slot,
+          ),
+          matching: find.byType(_WrapCard),
+        );
+        return tester
+            .renderObject<RenderBox>(copy)
+            .getTransformTo(gridBox(tester))
+            .storage[0];
+      }
+
+      final expectedLowScale = crossfade.itemWidth / crossfade.lowWidth;
+      final expectedHighScale = crossfade.itemWidth / crossfade.highWidth;
+      expect(
+        copyScale(ZoomSlot.low),
+        moreOrLessEquals(expectedLowScale, epsilon: 0.01),
+      );
+      expect(
+        copyScale(ZoomSlot.high),
+        moreOrLessEquals(expectedHighScale, epsilon: 0.01),
+      );
+      expect(
+        copyScale(ZoomSlot.low) * crossfade.lowWidth,
+        moreOrLessEquals(
+          copyScale(ZoomSlot.high) * crossfade.highWidth,
+          epsilon: 0.1,
+        ),
+        reason: 'both renditions paint at the interpolated width',
+      );
+
+      await tester.pumpAndSettle();
+      // One column spans the full content width; copies collapsed to one each.
+      expect(cardWidth(tester, 'a'), moreOrLessEquals(400));
+      expect(find.byType(_WrapCard), findsNWidgets(4));
+    },
+  );
+
+  testWidgets('style: morph dissolves the fading rendition through a blur', (
+    tester,
+  ) async {
     await tester.pumpWidget(const _Harness(crossAxisCount: 2));
     await tester.pumpAndSettle();
 
-    // Drop to a single column: the settle spring morphs the layout.
+    // At rest there is no crossfade, so nothing is blurred.
+    expect(
+      tester.layers.whereType<ImageFilterLayer>(),
+      isEmpty,
+      reason: 'the resting grid is crisp',
+    );
+
+    // Morph to one column; while a rendition is fading (alpha < 1) it is
+    // blurred, so a blur layer is composited on at least one mid-morph frame.
     await tester.pumpWidget(const _Harness(crossAxisCount: 1));
-    await tester.pump(const Duration(milliseconds: 60));
-
-    // Every item exists twice mid-morph: the outgoing and incoming renderings.
-    final cards = find.byType(_WrapCard);
-    expect(cards, findsNWidgets(8));
-
-    // Each copy is laid out at an exact endpoint width — never an intermediate
-    // one. That is the "no live re-wrap" contract.
-    for (final element in cards.evaluate()) {
-      final width = (element.renderObject! as RenderBox).size.width;
-      expect(
-        [196.0, 400.0].any((endpoint) => (width - endpoint).abs() < 0.01),
-        isTrue,
-        reason: 'copy width $width must be an endpoint width',
-      );
+    var sawBlur = false;
+    var sawMorph = false;
+    for (var i = 0; i < 12; i++) {
+      await tester.pump(const Duration(milliseconds: 16));
+      final t = gridBox(tester).debugCrossfade.t;
+      if (t > 0 && t < 1) sawMorph = true;
+      if (tester.layers.whereType<ImageFilterLayer>().isNotEmpty)
+        sawBlur = true;
     }
+    expect(sawMorph, isTrue, reason: 'the programmatic morph was mid-flight');
+    expect(
+      sawBlur,
+      isTrue,
+      reason: 'the fading morph rendition is blurred mid-transition',
+    );
 
-    // Photos layering: the incoming (high) canvas ramps to solid by t = 0.4,
-    // the outgoing (low) canvas ghosts out above it. Each group's fractional
-    // alpha appears as at most one shared OpacityLayer; a solid group paints
-    // direct with none. No per-item opacity layers.
-    final crossfade = gridBox(tester).debugCrossfade;
-    expect(crossfade.t, greaterThan(0));
-    expect(crossfade.t, lessThan(1));
-
-    final t = crossfade.t;
-    const solidAt = 0.18;
-    final highAlpha = (t / solidAt).clamp(0.0, 1.0);
-    final lowAlpha = 1 - t;
-    final alphas = tester.layers.whereType<OpacityLayer>().map((layer) => layer.alpha ?? -1).toList();
-    for (final groupAlpha in [highAlpha, lowAlpha]) {
-      if (groupAlpha > 0 && groupAlpha < 1) {
-        expect(alphas, contains((groupAlpha * 255).round()), reason: 'a translucent canvas fades as one group');
-      }
-    }
-
-    // Both renditions scale from their endpoint width to the same interpolated
-    // width, so the pair shares one painted tile size — the crossfade swaps
-    // resolution in place instead of blending two differently-sized grids.
-    double copyScale(ZoomSlot slot) {
-      final copy = find.descendant(
-        of: find.byWidgetPredicate((widget) => widget is GridChild && widget.id == 'a' && widget.zoomSlot == slot),
-        matching: find.byType(_WrapCard),
-      );
-      return tester.renderObject<RenderBox>(copy).getTransformTo(gridBox(tester)).storage[0];
-    }
-
-    final expectedLowScale = crossfade.itemWidth / crossfade.lowWidth;
-    final expectedHighScale = crossfade.itemWidth / crossfade.highWidth;
-    expect(copyScale(ZoomSlot.low), moreOrLessEquals(expectedLowScale, epsilon: 0.01));
-    expect(copyScale(ZoomSlot.high), moreOrLessEquals(expectedHighScale, epsilon: 0.01));
-    expect(copyScale(ZoomSlot.low) * crossfade.lowWidth, moreOrLessEquals(copyScale(ZoomSlot.high) * crossfade.highWidth, epsilon: 0.1), reason: 'both renditions paint at the interpolated width');
-
+    // The settle removes the crossfade, so the resting grid is crisp again.
     await tester.pumpAndSettle();
-    // One column spans the full content width; copies collapsed to one each.
-    expect(cardWidth(tester, 'a'), moreOrLessEquals(400));
-    expect(find.byType(_WrapCard), findsNWidgets(4));
+    expect(
+      tester.layers.whereType<ImageFilterLayer>(),
+      isEmpty,
+      reason: 'the settled grid is crisp',
+    );
   });
 
-  testWidgets('crossfade: false preserves the live-reflow morph', (tester) async {
-    await tester.pumpWidget(const _Harness(crossAxisCount: 2, crossfade: false));
-    await tester.pumpAndSettle();
-    final twoColWidth = cardWidth(tester, 'a');
-
-    await tester.pumpWidget(const _Harness(crossAxisCount: 1, crossfade: false));
-    await tester.pump(const Duration(milliseconds: 60));
-
-    // Single copy per item, laid out at the interpolated width.
-    expect(find.byType(_WrapCard), findsNWidgets(4));
-    final midWidth = cardWidth(tester, 'a');
-    expect(midWidth, greaterThan(twoColWidth));
-    expect(midWidth, lessThan(400));
-
-    await tester.pumpAndSettle();
-    expect(cardWidth(tester, 'a'), moreOrLessEquals(400));
-  });
-
-  testWidgets('the settled layout equals a grid built directly at that count', (tester) async {
+  testWidgets('the settled layout equals a grid built directly at that count', (
+    tester,
+  ) async {
     const ids = ['a', 'b', 'c', 'd'];
 
     // Reference rects from grids built directly at each count (tree reset in
@@ -223,9 +284,21 @@ void main() {
       await tester.pumpAndSettle();
       for (final id in ids) {
         final rect = tester.getRect(cardOf(id));
-        expect(rect.left, moreOrLessEquals(direct[id]!.left, epsilon: 0.5), reason: '$id left at $count cols');
-        expect(rect.top, moreOrLessEquals(direct[id]!.top, epsilon: 0.5), reason: '$id top at $count cols');
-        expect(rect.width, moreOrLessEquals(direct[id]!.width, epsilon: 0.5), reason: '$id width at $count cols');
+        expect(
+          rect.left,
+          moreOrLessEquals(direct[id]!.left, epsilon: 0.5),
+          reason: '$id left at $count cols',
+        );
+        expect(
+          rect.top,
+          moreOrLessEquals(direct[id]!.top, epsilon: 0.5),
+          reason: '$id top at $count cols',
+        );
+        expect(
+          rect.width,
+          moreOrLessEquals(direct[id]!.width, epsilon: 0.5),
+          reason: '$id width at $count cols',
+        );
       }
     }
 
@@ -235,7 +308,9 @@ void main() {
     await expectSettledAt(1, directOne);
   });
 
-  testWidgets('total grid height grows as columns collapse to one', (tester) async {
+  testWidgets('total grid height grows as columns collapse to one', (
+    tester,
+  ) async {
     await tester.pumpWidget(const _Harness(crossAxisCount: 2));
     await tester.pumpAndSettle();
     final twoColHeight = tester.getSize(find.byType(FluidGrid<String>)).height;
@@ -248,7 +323,9 @@ void main() {
     expect(oneColHeight, greaterThan(twoColHeight));
   });
 
-  testWidgets('element state survives the morph on the primary copy', (tester) async {
+  testWidgets('element state survives the morph on the primary copy', (
+    tester,
+  ) async {
     Widget counterHarness(int count) => _Harness(
       crossAxisCount: count,
       buildCard: (item) => _CounterCard(item, key: ValueKey('counter-$item')),
@@ -273,13 +350,17 @@ void main() {
     expect(find.text('a:2'), findsOneWidget);
   });
 
-  testWidgets('the dual-to-single collapse never teleports a tile', (tester) async {
+  testWidgets('the dual-to-single collapse never teleports a tile', (
+    tester,
+  ) async {
     // A deliberately soft tracking spring guarantees the item springs lag far
     // behind the morph the whole way. When the zoom rests and the crossfade
     // copies collapse to single mode, paint hands over from the frame-exact
     // lerped rects to the springs — without the collapse-frame jump that
     // hand-off is a 100px+ single-frame scatter that then glides back.
-    const laggy = GridSprings(zoomTracking: SpringDescription(mass: 1, stiffness: 50, damping: 14));
+    const laggy = GridSprings(
+      zoomTracking: SpringDescription(mass: 1, stiffness: 50, damping: 14),
+    );
 
     await tester.pumpWidget(const _Harness(crossAxisCount: 2, springs: laggy));
     await tester.pumpAndSettle();
@@ -288,7 +369,10 @@ void main() {
     // through the dual-mode frames and across the collapse. (Item 'a' sits at
     // the same spot in both layouts; the others travel.)
     Finder primaryOf(String id) => find.descendant(
-      of: find.byWidgetPredicate((widget) => widget is GridChild && widget.id == id && !widget.isZoomOverlay),
+      of: find.byWidgetPredicate(
+        (widget) =>
+            widget is GridChild && widget.id == id && !widget.isZoomOverlay,
+      ),
       matching: find.byType(_WrapCard),
     );
     const ids = ['a', 'b', 'c', 'd'];
@@ -305,12 +389,15 @@ void main() {
     while (tester.binding.hasScheduledFrame && frames < 300) {
       await tester.pump(const Duration(milliseconds: 8));
       frames++;
-      final current = {for (final id in ids) id: tester.getTopLeft(primaryOf(id))};
+      final current = {
+        for (final id in ids) id: tester.getTopLeft(primaryOf(id)),
+      };
       for (final id in ids) {
         expect(
           (current[id]! - previous[id]!).distance,
           lessThan(60),
-          reason: 'frame $frames, item $id: the morph and its collapse must be continuous',
+          reason:
+              'frame $frames, item $id: the morph and its collapse must be continuous',
         );
       }
       previous = current;
@@ -321,7 +408,9 @@ void main() {
     expect(cardWidth(tester, 'a'), moreOrLessEquals(400));
   });
 
-  testWidgets("an item's two renditions coincide throughout the morph", (tester) async {
+  testWidgets("an item's two renditions coincide throughout the morph", (
+    tester,
+  ) async {
     // The defining Photos property: the source and destination copies of each
     // element travel together, so every tile reads as ONE element morphing to
     // its new slot while its content crossfades.
@@ -332,30 +421,60 @@ void main() {
     await tester.pump(const Duration(milliseconds: 8));
 
     Finder copyOf(String id, {required bool overlay}) => find.descendant(
-      of: find.byWidgetPredicate((widget) => widget is GridChild && widget.id == id && widget.isZoomOverlay == overlay),
+      of: find.byWidgetPredicate(
+        (widget) =>
+            widget is GridChild &&
+            widget.id == id &&
+            widget.isZoomOverlay == overlay,
+      ),
       matching: find.byType(_WrapCard),
     );
 
     var midMorphFrames = 0;
     while (tester.binding.hasScheduledFrame && midMorphFrames < 300) {
       await tester.pump(const Duration(milliseconds: 16));
-      if (copyOf('a', overlay: true).evaluate().isEmpty) break; // collapsed to single mode
+      if (copyOf('a', overlay: true).evaluate().isEmpty)
+        break; // collapsed to single mode
       midMorphFrames++;
       final itemWidth = gridBox(tester).debugCrossfade.itemWidth;
       for (final id in const ['a', 'b', 'c', 'd']) {
         final primary = tester.getRect(copyOf(id, overlay: false));
         final secondary = tester.getRect(copyOf(id, overlay: true));
-        expect((primary.left - secondary.left).abs(), lessThan(0.01), reason: 'frame $midMorphFrames, $id: pair shares its left edge');
-        expect((primary.top - secondary.top).abs(), lessThan(0.01), reason: 'frame $midMorphFrames, $id: pair shares its top edge');
-        expect(primary.width, moreOrLessEquals(itemWidth, epsilon: 0.01), reason: 'frame $midMorphFrames, $id: primary paints at the interpolated width');
-        expect(secondary.width, moreOrLessEquals(itemWidth, epsilon: 0.01), reason: 'frame $midMorphFrames, $id: overlay paints at the interpolated width');
+        expect(
+          (primary.left - secondary.left).abs(),
+          lessThan(0.01),
+          reason: 'frame $midMorphFrames, $id: pair shares its left edge',
+        );
+        expect(
+          (primary.top - secondary.top).abs(),
+          lessThan(0.01),
+          reason: 'frame $midMorphFrames, $id: pair shares its top edge',
+        );
+        expect(
+          primary.width,
+          moreOrLessEquals(itemWidth, epsilon: 0.01),
+          reason:
+              'frame $midMorphFrames, $id: primary paints at the interpolated width',
+        );
+        expect(
+          secondary.width,
+          moreOrLessEquals(itemWidth, epsilon: 0.01),
+          reason:
+              'frame $midMorphFrames, $id: overlay paints at the interpolated width',
+        );
       }
     }
-    expect(midMorphFrames, greaterThan(3), reason: 'sampled a real stretch of the morph');
+    expect(
+      midMorphFrames,
+      greaterThan(3),
+      reason: 'sampled a real stretch of the morph',
+    );
     await tester.pumpAndSettle();
   });
 
-  testWidgets('the incoming canvas converges to its resting x by pure scale', (tester) async {
+  testWidgets('the incoming canvas converges to its resting x by pure scale', (
+    tester,
+  ) async {
     await tester.pumpWidget(const _Harness(crossAxisCount: 2));
     await tester.pumpAndSettle();
 
@@ -367,7 +486,12 @@ void main() {
     await tester.pump(const Duration(milliseconds: 8));
 
     Finder incomingOf(String id) => find.descendant(
-      of: find.byWidgetPredicate((widget) => widget is GridChild && widget.id == id && widget.zoomSlot == ZoomSlot.low),
+      of: find.byWidgetPredicate(
+        (widget) =>
+            widget is GridChild &&
+            widget.id == id &&
+            widget.zoomSlot == ZoomSlot.low,
+      ),
       matching: find.byType(_WrapCard),
     );
 
@@ -379,14 +503,22 @@ void main() {
       frames++;
     }
     expect(frames, lessThan(300), reason: 'the morph settles');
-    expect(xs.length, greaterThan(3), reason: 'sampled a real stretch of the morph');
+    expect(
+      xs.length,
+      greaterThan(3),
+      reason: 'sampled a real stretch of the morph',
+    );
 
     int? direction;
     for (var i = 1; i < xs.length; i++) {
       final delta = xs[i] - xs[i - 1];
       if (delta.abs() < 0.01) continue;
       direction ??= delta.sign.toInt();
-      expect(delta.sign.toInt(), direction, reason: 'frame $i: x-motion never reverses');
+      expect(
+        delta.sign.toInt(),
+        direction,
+        reason: 'frame $i: x-motion never reverses',
+      );
     }
 
     await tester.pumpAndSettle();
@@ -398,7 +530,8 @@ void main() {
   testWidgets('a tap mid-morph reaches exactly one copy', (tester) async {
     final taps = <String>[];
 
-    Widget tapHarness(int count) => _Harness(crossAxisCount: count, onTapItem: taps.add);
+    Widget tapHarness(int count) =>
+        _Harness(crossAxisCount: count, onTapItem: taps.add);
 
     await tester.pumpWidget(tapHarness(2));
     await tester.pumpAndSettle();
@@ -409,7 +542,8 @@ void main() {
 
     // Both copies of an item paint at the same animated offset; the overlay
     // must be pointer-transparent.
-    final target = tester.getTopLeft(find.byType(_WrapCard).first) + const Offset(10, 10);
+    final target =
+        tester.getTopLeft(find.byType(_WrapCard).first) + const Offset(10, 10);
     await tester.tapAt(target);
     await tester.pumpAndSettle();
 

@@ -6,7 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 
 const double _dt = 1 / 60;
 
-GridAnimator animator({double initialZoomLevel = 2}) => GridAnimator(springs: const GridSprings(), initialZoomLevel: initialZoomLevel);
+GridAnimator animator({double initialZoomLevel = 2}) => GridAnimator(
+  springs: const GridSprings(),
+  initialZoomLevel: initialZoomLevel,
+);
 
 void main() {
   test('starts at the initial column count, at rest', () {
@@ -52,27 +55,34 @@ void main() {
     expect(a.needsLayout, isTrue);
   });
 
-  test('an active zoom retargets items with the tracking spring, jumping height', () {
-    final a = animator()
-      ..zoomSessionActive = true
-      // Seed an item at the origin.
-      ..syncTargets(rects: {'x': const Rect.fromLTWH(0, 0, 40, 40)}, totalHeight: 100, jump: true);
-    expect(a.offsetOf('x'), Offset.zero);
+  test(
+    'an active zoom retargets items with the tracking spring, jumping height',
+    () {
+      final a = animator()
+        ..zoomSessionActive = true
+        // Seed an item at the origin.
+        ..syncTargets(
+          rects: {'x': const Rect.fromLTWH(0, 0, 40, 40)},
+          totalHeight: 100,
+          jump: true,
+        );
+      expect(a.offsetOf('x'), Offset.zero);
 
-    // A pinch frame moves the item and grows the grid.
-    a.syncTargets(
-      rects: {'x': const Rect.fromLTWH(50, 80, 40, 40)},
-      totalHeight: 200,
-      jump: false,
-      zoomActive: true,
-    );
+      // A pinch frame moves the item and grows the grid.
+      a.syncTargets(
+        rects: {'x': const Rect.fromLTWH(50, 80, 40, 40)},
+        totalHeight: 200,
+        jump: false,
+        zoomActive: true,
+      );
 
-    // Height is frame-exact immediately (jumped, not sprung).
-    expect(a.height, 200);
-    // The item is on its way but has not teleported.
-    a.tick(_dt);
-    final offset = a.offsetOf('x')!;
-    expect(offset.dx, greaterThan(0));
-    expect(offset.dx, lessThan(50));
-  });
+      // Height is frame-exact immediately (jumped, not sprung).
+      expect(a.height, 200);
+      // The item is on its way but has not teleported.
+      a.tick(_dt);
+      final offset = a.offsetOf('x')!;
+      expect(offset.dx, greaterThan(0));
+      expect(offset.dx, lessThan(50));
+    },
+  );
 }

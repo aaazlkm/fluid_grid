@@ -3,7 +3,7 @@ import 'package:fluid_grid/src/model/grid_springs.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-const SpringDescription _spring = GridSprings.defaultReflow;
+final SpringDescription _spring = GridSprings.defaultReflow;
 const double _dt = 1 / 60;
 
 /// Runs the spring until it comes to rest, returning the frames it took.
@@ -11,7 +11,8 @@ int settle(SpringValue value, {int maxFrames = 600}) {
   var frames = 0;
   while (value.tick(_dt)) {
     frames++;
-    if (frames > maxFrames) fail('spring did not settle within $maxFrames frames');
+    if (frames > maxFrames)
+      fail('spring did not settle within $maxFrames frames');
   }
   return frames;
 }
@@ -63,28 +64,31 @@ void main() {
     expect(value.value, midway);
   });
 
-  test('a mid-flight retarget is continuous in position and keeps velocity', () {
-    final value = SpringValue(0)..retarget(100, _spring);
-    for (var i = 0; i < 10; i++) {
+  test(
+    'a mid-flight retarget is continuous in position and keeps velocity',
+    () {
+      final value = SpringValue(0)..retarget(100, _spring);
+      for (var i = 0; i < 10; i++) {
+        value.tick(_dt);
+      }
+
+      final positionBefore = value.value;
+      final velocityBefore = value.velocity;
+      expect(velocityBefore, greaterThan(0));
+
+      value.retarget(200, _spring);
+
+      // No teleport, and the momentum toward the old target is carried over.
+      expect(value.value, positionBefore);
+      expect(value.velocity, velocityBefore);
+
       value.tick(_dt);
-    }
+      expect(value.value, greaterThan(positionBefore));
 
-    final positionBefore = value.value;
-    final velocityBefore = value.velocity;
-    expect(velocityBefore, greaterThan(0));
-
-    value.retarget(200, _spring);
-
-    // No teleport, and the momentum toward the old target is carried over.
-    expect(value.value, positionBefore);
-    expect(value.velocity, velocityBefore);
-
-    value.tick(_dt);
-    expect(value.value, greaterThan(positionBefore));
-
-    settle(value);
-    expect(value.value, 200);
-  });
+      settle(value);
+      expect(value.value, 200);
+    },
+  );
 
   test('reversing mid-flight is continuous and returns to the new target', () {
     final value = SpringValue(0)..retarget(100, _spring);
@@ -107,29 +111,36 @@ void main() {
     expect(value.velocity, 0);
   });
 
-  test('retargeting to the same target with a new spring adopts the new tuning', () {
-    const soft = SpringDescription(mass: 1, stiffness: 40, damping: 12);
-    const stiff = SpringDescription(mass: 1, stiffness: 900, damping: 60);
+  test(
+    'retargeting to the same target with a new spring adopts the new tuning',
+    () {
+      const soft = SpringDescription(mass: 1, stiffness: 40, damping: 12);
+      const stiff = SpringDescription(mass: 1, stiffness: 900, damping: 60);
 
-    final soften = SpringValue(0)..retarget(100, soft);
-    final stiffen = SpringValue(0)..retarget(100, soft);
-    for (var i = 0; i < 6; i++) {
-      soften.tick(_dt);
-      stiffen.tick(_dt);
-    }
-    // Same position/velocity so far.
-    expect(stiffen.value, moreOrLessEquals(soften.value));
+      final soften = SpringValue(0)..retarget(100, soft);
+      final stiffen = SpringValue(0)..retarget(100, soft);
+      for (var i = 0; i < 6; i++) {
+        soften.tick(_dt);
+        stiffen.tick(_dt);
+      }
+      // Same position/velocity so far.
+      expect(stiffen.value, moreOrLessEquals(soften.value));
 
-    // Hand off to a much stiffer spring at the *same* target: the tuning must
-    // actually change, so the next frame accelerates harder than staying soft.
-    stiffen.retarget(100, stiff);
-    final softNext = (soften..tick(_dt)).value;
-    final stiffNext = (stiffen..tick(_dt)).value;
-    expect(stiffNext, greaterThan(softNext), reason: 'the stiffer spring pulls harder toward the target');
+      // Hand off to a much stiffer spring at the *same* target: the tuning must
+      // actually change, so the next frame accelerates harder than staying soft.
+      stiffen.retarget(100, stiff);
+      final softNext = (soften..tick(_dt)).value;
+      final stiffNext = (stiffen..tick(_dt)).value;
+      expect(
+        stiffNext,
+        greaterThan(softNext),
+        reason: 'the stiffer spring pulls harder toward the target',
+      );
 
-    // Re-issuing the identical target+tuning does not restart the simulation.
-    final beforeElapsedProgress = stiffen.value;
-    stiffen.retarget(100, stiff);
-    expect((stiffen..tick(_dt)).value, greaterThan(beforeElapsedProgress));
-  });
+      // Re-issuing the identical target+tuning does not restart the simulation.
+      final beforeElapsedProgress = stiffen.value;
+      stiffen.retarget(100, stiff);
+      expect((stiffen..tick(_dt)).value, greaterThan(beforeElapsedProgress));
+    },
+  );
 }
