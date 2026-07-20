@@ -124,11 +124,11 @@ masonry layout normally fixes each item's column by its index, so a tile that si
 edge at 4 columns but the left edge at 3 would sweep across the screen on every zoom. Instead, the
 incoming layout is shifted by whole cells so the pinched tile lands in the cell nearest the
 fingers, and that shift **persists in the resting layout**: the section may show blank leading
-cells and a trailing partial row, exactly like the Photos app. The target cell **tracks the
-fingers live**: if they slide sideways into a different cell mid-pinch, the incoming grid re-flows
-around them again, so the tile always settles where the fingers ended, not where the gesture
-began. The offset survives scrolling and data updates, and decays back to the canonical layout on
-the next programmatic `crossAxisCount` change.
+cells and a trailing partial row, exactly like the Photos app. The target cell is **chosen once,
+as the pinch begins, and held for the gesture**: sliding the fingers sideways mid-pinch does not
+re-flow the grid, so the tile never snaps to a different column under them. The offset survives
+scrolling and data updates, and decays back to the canonical layout on the next programmatic
+`crossAxisCount` change.
 
 Both modes float section headers **above** the tiles, clip mid-gesture paint to the grid's own
 bounds, and carry a contract on `itemBuilder`: item content is instantiated twice for a few hundred

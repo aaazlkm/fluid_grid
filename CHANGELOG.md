@@ -3,9 +3,9 @@
 - Add `GridZoomConfig.switchThreshold` — how far a gentle pinch must drag toward
   a neighbouring column count before releasing commits to it, as a fraction of
   one level-step measured from the starting count. Directional and symmetric in
-  both zoom directions. Defaults to 0.5 (snap to nearest, unchanged); lower
-  values (e.g. 0.3) make switching more eager, 1.0 requires reaching the level.
-  Flings still commit one step regardless.
+  both zoom directions. Defaults to 0.1 (eager — one tenth of a step commits);
+  0.5 is the classic snap-to-nearest, and 1.0 requires dragging all the way onto
+  the next level. Flings still commit one step regardless.
 - `GridZoomStyle.morph` now dissolves through a Gaussian blur: each crossfade
   rendition is blurred in proportion to its transparency, so the transition
   softens as content swaps and re-sharpens crisply at both resting levels.
@@ -50,13 +50,11 @@
 - The reorder solver (`resolveInsertion`) is now linear in the item count
   instead of quadratic, so drag stays responsive in large collections.
 - Add `GridZoomStyle` to choose how items are rendered during a pinch morph:
-  `morph` (the default iOS-Photos travelling crossfade), `fade` (renditions
-  crossfade in place at their own column-count positions without travelling),
-  and `reflow` (live re-layout, no copies).
+  `morph` (the default travelling per-item crossfade) and `photos` (the iOS
+  Photos rigid-canvas crossfade).
 - **Breaking:** `GridZoomConfig.crossfade` (bool) is replaced by
   `GridZoomConfig.style` (`GridZoomStyle`). `crossfade: true` → `style:
-  GridZoomStyle.morph` (default); `crossfade: false` → `style:
-  GridZoomStyle.reflow`.
+  GridZoomStyle.morph` (the default).
 
 ## 0.1.0
 
