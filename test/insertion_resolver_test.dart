@@ -36,30 +36,48 @@ void main() {
     ];
 
     test('resolves to the first slot when dragged over the top-left cell', () {
-      final candidate = resolve(sections: sections, draggedTopLeft: Offset.zero);
+      final candidate = resolve(
+        sections: sections,
+        draggedTopLeft: Offset.zero,
+      );
       expect(candidate, const InsertionCandidate(sectionId: 's', index: 0));
     });
 
     test('resolves to a late slot when dragged below the existing items', () {
-      final candidate = resolve(sections: sections, draggedTopLeft: const Offset(112, 48));
+      final candidate = resolve(
+        sections: sections,
+        draggedTopLeft: const Offset(112, 48),
+      );
       expect(candidate, isNotNull);
       expect(candidate!.sectionId, 's');
       expect(candidate.index, greaterThanOrEqualTo(2));
     });
 
-    test('the trailing slot wins when dragged past the last item in its column', () {
-      // Three items fill column 0 twice and column 1 once, so the final slot is
-      // the one that lands in column 1. Dragging to the bottom-right picks it.
-      final candidate = resolve(sections: sections, draggedTopLeft: const Offset(112, 1000));
-      expect(candidate, const InsertionCandidate(sectionId: 's', index: 3));
-    });
+    test(
+      'the trailing slot wins when dragged past the last item in its column',
+      () {
+        // Three items fill column 0 twice and column 1 once, so the final slot is
+        // the one that lands in column 1. Dragging to the bottom-right picks it.
+        final candidate = resolve(
+          sections: sections,
+          draggedTopLeft: const Offset(112, 1000),
+        );
+        expect(candidate, const InsertionCandidate(sectionId: 's', index: 3));
+      },
+    );
 
-    test('the column, not just the row, decides between two slots at the same height', () {
-      // Index 2 and index 3 both place the item at y=48; they differ only in
-      // column. Dragging to the bottom-left must therefore choose index 2.
-      final candidate = resolve(sections: sections, draggedTopLeft: const Offset(0, 1000));
-      expect(candidate, const InsertionCandidate(sectionId: 's', index: 2));
-    });
+    test(
+      'the column, not just the row, decides between two slots at the same height',
+      () {
+        // Index 2 and index 3 both place the item at y=48; they differ only in
+        // column. Dragging to the bottom-left must therefore choose index 2.
+        final candidate = resolve(
+          sections: sections,
+          draggedTopLeft: const Offset(0, 1000),
+        );
+        expect(candidate, const InsertionCandidate(sectionId: 's', index: 2));
+      },
+    );
   });
 
   group('hysteresis', () {
@@ -67,17 +85,32 @@ void main() {
       const SectionOrder(id: 's', itemIds: ['a', 'b']),
     ];
 
-    test('holds the current slot when a challenger is only marginally closer', () {
-      // Sits essentially on the boundary between slot 0 and slot 1.
-      const boundary = Offset(56, 0);
-      final withoutCurrent = resolve(sections: sections, draggedTopLeft: boundary);
-      final other = withoutCurrent == const InsertionCandidate(sectionId: 's', index: 0)
-          ? const InsertionCandidate(sectionId: 's', index: 1)
-          : const InsertionCandidate(sectionId: 's', index: 0);
+    test(
+      'holds the current slot when a challenger is only marginally closer',
+      () {
+        // Sits essentially on the boundary between slot 0 and slot 1.
+        const boundary = Offset(56, 0);
+        final withoutCurrent = resolve(
+          sections: sections,
+          draggedTopLeft: boundary,
+        );
+        final other =
+            withoutCurrent == const InsertionCandidate(sectionId: 's', index: 0)
+            ? const InsertionCandidate(sectionId: 's', index: 1)
+            : const InsertionCandidate(sectionId: 's', index: 0);
 
-      final held = resolve(sections: sections, draggedTopLeft: boundary, current: other);
-      expect(held, other, reason: 'the incumbent slot should survive a near tie');
-    });
+        final held = resolve(
+          sections: sections,
+          draggedTopLeft: boundary,
+          current: other,
+        );
+        expect(
+          held,
+          other,
+          reason: 'the incumbent slot should survive a near tie',
+        );
+      },
+    );
 
     test('yields the slot once a challenger is clearly closer', () {
       final candidate = resolve(
@@ -96,12 +129,18 @@ void main() {
     ];
 
     test('drags into the upper section when hovering it', () {
-      final candidate = resolve(sections: sections, draggedTopLeft: Offset.zero);
+      final candidate = resolve(
+        sections: sections,
+        draggedTopLeft: Offset.zero,
+      );
       expect(candidate!.sectionId, 'top');
     });
 
     test('drags into the lower section when hovering below it', () {
-      final candidate = resolve(sections: sections, draggedTopLeft: const Offset(0, 200));
+      final candidate = resolve(
+        sections: sections,
+        draggedTopLeft: const Offset(0, 200),
+      );
       expect(candidate!.sectionId, 'bottom');
     });
 
@@ -141,5 +180,69 @@ void main() {
 
       expect(candidate!.sectionId, 'top');
     });
+  });
+
+  group('leadingCells', () {
+    // With leadingCells: 1 at 2 columns, the resting layout is
+    // a=(112,0), b=(0,48), c=(112,48) — column 0 of row 0 is blank.
+    final sections = [
+      const SectionOrder(id: 's', itemIds: ['a', 'b', 'c']),
+    ];
+    const chrome = [SectionChrome(id: 's', leadingCells: 1)];
+
+    test(
+      'hovering the leading blank cell picks the slot below it, not index 0',
+      () {
+        // Index 0 sits at the offset column (112, 0); index 1 wraps to (0, 48).
+        final candidate = resolve(
+          sections: sections,
+          chrome: chrome,
+          draggedTopLeft: Offset.zero,
+        );
+        expect(candidate, const InsertionCandidate(sectionId: 's', index: 1));
+      },
+    );
+
+    test('hovering the offset first cell picks index 0', () {
+      final candidate = resolve(
+        sections: sections,
+        chrome: chrome,
+        draggedTopLeft: const Offset(112, 0),
+      );
+      expect(candidate, const InsertionCandidate(sectionId: 's', index: 0));
+    });
+
+    test('leadingCells beyond the column count normalizes', () {
+      // 3 mod 2 == 1: identical to the plain offset-1 case.
+      const wrapped = [SectionChrome(id: 's', leadingCells: 3)];
+      final candidate = resolve(
+        sections: sections,
+        chrome: wrapped,
+        draggedTopLeft: Offset.zero,
+      );
+      expect(candidate, const InsertionCandidate(sectionId: 's', index: 1));
+    });
+
+    test(
+      'an empty section with a dormant offset still offers its index-0 slot',
+      () {
+        final withEmptyTop = [
+          const SectionOrder(id: 'top', itemIds: []),
+          const SectionOrder(id: 'bottom', itemIds: ['b']),
+        ];
+        const offsetChrome = [
+          SectionChrome(id: 'top', emptyExtent: 64, leadingCells: 1),
+          SectionChrome(id: 'bottom'),
+        ];
+
+        final candidate = resolve(
+          sections: withEmptyTop,
+          chrome: offsetChrome,
+          draggedTopLeft: const Offset(112, 8),
+        );
+
+        expect(candidate, const InsertionCandidate(sectionId: 'top', index: 0));
+      },
+    );
   });
 }

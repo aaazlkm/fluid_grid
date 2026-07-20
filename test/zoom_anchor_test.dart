@@ -19,7 +19,11 @@ class _Card extends StatelessWidget {
 }
 
 class _Harness extends StatefulWidget {
-  const _Harness({required this.itemCount, this.scrollable = true, this.controller});
+  const _Harness({
+    required this.itemCount,
+    this.scrollable = true,
+    this.controller,
+  });
 
   final int itemCount;
   final bool scrollable;
@@ -32,7 +36,9 @@ class _Harness extends StatefulWidget {
 class _HarnessState extends State<_Harness> {
   int _count = 2;
 
-  late final List<String> _items = [for (var i = 0; i < widget.itemCount; i++) 'item$i'];
+  late final List<String> _items = [
+    for (var i = 0; i < widget.itemCount; i++) 'item$i',
+  ];
 
   void removeItem(String id) => setState(() => _items.remove(id));
 
@@ -54,7 +60,9 @@ class _HarnessState extends State<_Harness> {
 
     return MaterialApp(
       home: Scaffold(
-        body: widget.scrollable ? ListView(controller: widget.controller, children: [grid]) : Align(alignment: Alignment.topLeft, child: grid),
+        body: widget.scrollable
+            ? ListView(controller: widget.controller, children: [grid])
+            : Align(alignment: Alignment.topLeft, child: grid),
       ),
     );
   }
@@ -66,12 +74,19 @@ Future<void> pinch(
   required double fromSeparation,
   required double toSeparation,
 }) async {
-  final g1 = await tester.startGesture(center - Offset(fromSeparation / 2, 0), pointer: 1);
-  final g2 = await tester.startGesture(center + Offset(fromSeparation / 2, 0), pointer: 2);
+  final g1 = await tester.startGesture(
+    center - Offset(fromSeparation / 2, 0),
+    pointer: 1,
+  );
+  final g2 = await tester.startGesture(
+    center + Offset(fromSeparation / 2, 0),
+    pointer: 2,
+  );
 
   const steps = 6;
   for (var step = 1; step <= steps; step++) {
-    final separation = fromSeparation + (toSeparation - fromSeparation) * step / steps;
+    final separation =
+        fromSeparation + (toSeparation - fromSeparation) * step / steps;
     await g1.moveTo(center - Offset(separation / 2, 0));
     await g2.moveTo(center + Offset(separation / 2, 0));
     await tester.pump(const Duration(milliseconds: 16));
@@ -83,7 +98,11 @@ Future<void> pinch(
 }
 
 /// A label of a card whose centre currently sits within the given y band.
-String cardNear(WidgetTester tester, {required double minY, required double maxY}) {
+String cardNear(
+  WidgetTester tester, {
+  required double minY,
+  required double maxY,
+}) {
   for (final element in tester.widgetList<_Card>(find.byType(_Card))) {
     final finder = find.text(element.label);
     if (finder.evaluate().isEmpty) continue;
@@ -94,7 +113,9 @@ String cardNear(WidgetTester tester, {required double minY, required double maxY
 }
 
 void main() {
-  testWidgets('keeps the pinched item under the fingers while zooming out', (tester) async {
+  testWidgets('keeps the pinched item under the fingers while zooming out', (
+    tester,
+  ) async {
     final controller = ScrollController();
     addTearDown(controller.dispose);
 
@@ -111,10 +132,16 @@ void main() {
     await pinch(tester, center: before, fromSeparation: 100, toSeparation: 190);
 
     final after = tester.getCenter(find.text(label));
-    expect(after.dy, moreOrLessEquals(before.dy, epsilon: 28), reason: 'the anchor held its vertical place');
+    expect(
+      after.dy,
+      moreOrLessEquals(before.dy, epsilon: 28),
+      reason: 'the anchor held its vertical place',
+    );
   });
 
-  testWidgets('keeps the pinched item under the fingers while zooming in', (tester) async {
+  testWidgets('keeps the pinched item under the fingers while zooming in', (
+    tester,
+  ) async {
     final controller = ScrollController();
     addTearDown(controller.dispose);
 
@@ -136,18 +163,31 @@ void main() {
     expect(after.dy, moreOrLessEquals(before.dy, epsilon: 28));
   });
 
-  testWidgets('pinching without a scrollable ancestor still zooms and does not throw', (tester) async {
-    await tester.pumpWidget(const _Harness(itemCount: 6, scrollable: false));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'pinching without a scrollable ancestor still zooms and does not throw',
+    (tester) async {
+      await tester.pumpWidget(const _Harness(itemCount: 6, scrollable: false));
+      await tester.pumpAndSettle();
 
-    final twoColWidth = tester.getSize(find.byType(_Card).first).width;
-    await pinch(tester, center: const Offset(200, 200), fromSeparation: 100, toSeparation: 200);
+      final twoColWidth = tester.getSize(find.byType(_Card).first).width;
+      await pinch(
+        tester,
+        center: const Offset(200, 200),
+        fromSeparation: 100,
+        toSeparation: 200,
+      );
 
-    // Zoomed to one column: cards are wider.
-    expect(tester.getSize(find.byType(_Card).first).width, greaterThan(twoColWidth));
-  });
+      // Zoomed to one column: cards are wider.
+      expect(
+        tester.getSize(find.byType(_Card).first).width,
+        greaterThan(twoColWidth),
+      );
+    },
+  );
 
-  testWidgets('the scroll pinning survives the anchor item leaving the data', (tester) async {
+  testWidgets('the scroll pinning survives the anchor item leaving the data', (
+    tester,
+  ) async {
     final controller = ScrollController();
     addTearDown(controller.dispose);
 
@@ -156,15 +196,23 @@ void main() {
     controller.jumpTo(240);
     await tester.pumpAndSettle();
 
-    final box = tester.renderObject<RenderMasonryGrid>(find.byType(MasonryGridBody));
+    final box = tester.renderObject<RenderMasonryGrid>(
+      find.byType(MasonryGridBody),
+    );
 
     // Pinch centred on a known card so it becomes the scroll anchor. Gentle
     // steps keep the zoom mid-morph (z ≈ 1.1–1.5) rather than rubber-banding
     // at the range edge, so both the live pinning and the settle are real.
     final label = cardNear(tester, minY: 220, maxY: 360);
     final center = tester.getCenter(find.text(label));
-    final g1 = await tester.startGesture(center - const Offset(50, 0), pointer: 1);
-    final g2 = await tester.startGesture(center + const Offset(50, 0), pointer: 2);
+    final g1 = await tester.startGesture(
+      center - const Offset(50, 0),
+      pointer: 1,
+    );
+    final g2 = await tester.startGesture(
+      center + const Offset(50, 0),
+      pointer: 2,
+    );
     for (var step = 1; step <= 2; step++) {
       await g1.moveTo(center - Offset(50 + step * 15.0, 0));
       await g2.moveTo(center + Offset(50 + step * 15.0, 0));
@@ -181,7 +229,11 @@ void main() {
       final anchorId = box.zoomAnchorId;
       final rect = box.lastLayout?.itemRects[anchorId];
       if (anchorId == null || rect == null) return double.infinity;
-      final pinnedGlobalY = box.localToGlobal(Offset(0, rect.top + box.zoomAnchorFraction.dy * rect.height)).dy;
+      final pinnedGlobalY = box
+          .localToGlobal(
+            Offset(0, rect.top + box.zoomAnchorFraction.dy * rect.height),
+          )
+          .dy;
       return (pinnedGlobalY - center.dy).abs();
     }
 
@@ -202,7 +254,11 @@ void main() {
       // correct one stays within one-frame prediction transients (the tight
       // bound also guards the once-per-frame correction — per-event double
       // writes used to park this at ~28px).
-      expect(pinError(), lessThan(10), reason: 'step $step: the survivor pins to the finger');
+      expect(
+        pinError(),
+        lessThan(10),
+        reason: 'step $step: the survivor pins to the finger',
+      );
     }
     await g1.up();
     await g2.up();
@@ -210,8 +266,14 @@ void main() {
     // And the settle keeps pinning even if the replacement anchor leaves too
     // (the anchor is read live each tick, not frozen at release).
     await tester.pump(const Duration(milliseconds: 16));
-    expect(box.animator.zoomActive, isTrue, reason: 'the release left a real settle to pin through');
-    tester.state<_HarnessState>(find.byType(_Harness)).removeItem(handedTo! as String);
+    expect(
+      box.animator.zoomActive,
+      isTrue,
+      reason: 'the release left a real settle to pin through',
+    );
+    tester
+        .state<_HarnessState>(find.byType(_Harness))
+        .removeItem(handedTo! as String);
     await tester.pump(const Duration(milliseconds: 16));
     for (var frame = 0; frame < 6; frame++) {
       await tester.pump(const Duration(milliseconds: 16));

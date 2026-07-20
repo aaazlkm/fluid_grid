@@ -80,19 +80,22 @@ Future<void> dragItem(WidgetTester tester, Offset from, Offset to) async {
 
 void main() {
   group('layout', () {
-    testWidgets('sizes itself exactly on the first frame, without an estimate pass', (tester) async {
-      await tester.pumpWidget(
-        const _Harness(
-          pinned: [],
-          unpinned: [_Item('a', 100), _Item('b', 40), _Item('c', 30)],
-        ),
-      );
-      // Deliberately no settle: assert what the very first frame produced.
+    testWidgets(
+      'sizes itself exactly on the first frame, without an estimate pass',
+      (tester) async {
+        await tester.pumpWidget(
+          const _Harness(
+            pinned: [],
+            unpinned: [_Item('a', 100), _Item('b', 40), _Item('c', 30)],
+          ),
+        );
+        // Deliberately no settle: assert what the very first frame produced.
 
-      final grid = tester.getSize(find.byType(FluidGrid<_Item>));
-      // Two columns: 'a' alone (100), then 'b' + 'c' stacked (40 + 30) in the other.
-      expect(grid.height, 100);
-    });
+        final grid = tester.getSize(find.byType(FluidGrid<_Item>));
+        // Two columns: 'a' alone (100), then 'b' + 'c' stacked (40 + 30) in the other.
+        expect(grid.height, 100);
+      },
+    );
 
     testWidgets('places items into the shortest column', (tester) async {
       await tester.pumpWidget(
@@ -111,7 +114,9 @@ void main() {
       expect(c.dy, 40);
     });
 
-    testWidgets('separates sections and keeps their column flows independent', (tester) async {
+    testWidgets('separates sections and keeps their column flows independent', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const _Harness(
           pinned: [_Item('p', 60)],
@@ -121,12 +126,17 @@ void main() {
 
       // 'u' starts a fresh section, so it takes column 0 below the pinned block.
       expect(tester.getTopLeft(find.text('u')).dy, 60);
-      expect(tester.getTopLeft(find.text('u')).dx, tester.getTopLeft(find.text('p')).dx);
+      expect(
+        tester.getTopLeft(find.text('u')).dx,
+        tester.getTopLeft(find.text('p')).dx,
+      );
     });
   });
 
   group('implicit animation', () {
-    testWidgets('springs surviving items into the gap left by a removal', (tester) async {
+    testWidgets('springs surviving items into the gap left by a removal', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         const _Harness(
           pinned: [],
@@ -148,7 +158,10 @@ void main() {
       expect(tester.getTopLeft(find.text('c')).dy, greaterThan(0));
 
       await tester.pumpAndSettle();
-      expect(tester.getTopLeft(find.text('c')).dy, moreOrLessEquals(0, epsilon: 0.5));
+      expect(
+        tester.getTopLeft(find.text('c')).dy,
+        moreOrLessEquals(0, epsilon: 0.5),
+      );
       // The ghost of 'b' has been dropped.
       expect(find.text('b'), findsNothing);
     });
@@ -185,7 +198,9 @@ void main() {
       expect(tapped, ['a']);
     });
 
-    testWidgets('a short drag without the long press does not reorder', (tester) async {
+    testWidgets('a short drag without the long press does not reorder', (
+      tester,
+    ) async {
       GridReorderResult<_Item>? result;
       await tester.pumpWidget(
         _Harness(
@@ -196,7 +211,9 @@ void main() {
       );
 
       // No pump past the delay: the recognizer never wins the arena.
-      final gesture = await tester.startGesture(tester.getCenter(find.text('a')));
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('a')),
+      );
       await gesture.moveTo(tester.getCenter(find.text('b')));
       await gesture.up();
       await tester.pumpAndSettle();
@@ -204,7 +221,9 @@ void main() {
       expect(result, isNull);
     });
 
-    testWidgets('dragging an item onto its neighbour swaps them', (tester) async {
+    testWidgets('dragging an item onto its neighbour swaps them', (
+      tester,
+    ) async {
       GridReorderResult<_Item>? result;
       final started = <String>[];
 
@@ -217,7 +236,11 @@ void main() {
         ),
       );
 
-      await dragItem(tester, tester.getCenter(find.text('a')), tester.getCenter(find.text('b')));
+      await dragItem(
+        tester,
+        tester.getCenter(find.text('a')),
+        tester.getCenter(find.text('b')),
+      );
 
       expect(started, ['a']);
       expect(result, isNotNull);
@@ -230,7 +253,9 @@ void main() {
       expect(result!.movedAcrossSections, isFalse);
     });
 
-    testWidgets('dragging into another section reports the target section', (tester) async {
+    testWidgets('dragging into another section reports the target section', (
+      tester,
+    ) async {
       GridReorderResult<_Item>? result;
 
       await tester.pumpWidget(
@@ -241,7 +266,11 @@ void main() {
         ),
       );
 
-      await dragItem(tester, tester.getCenter(find.text('u')), tester.getCenter(find.text('p')));
+      await dragItem(
+        tester,
+        tester.getCenter(find.text('u')),
+        tester.getCenter(find.text('p')),
+      );
 
       expect(result, isNotNull);
       expect(result!.item.id, 'u');
@@ -252,33 +281,41 @@ void main() {
       expect(result!.itemsOf('unpinned'), isEmpty);
     });
 
-    testWidgets('an empty collapsing section still accepts a drop while dragging', (tester) async {
-      GridReorderResult<_Item>? result;
+    testWidgets(
+      'an empty collapsing section still accepts a drop while dragging',
+      (tester) async {
+        GridReorderResult<_Item>? result;
 
-      await tester.pumpWidget(
-        _Harness(
-          pinned: const [],
-          unpinned: const [_Item('u', 60)],
-          pinnedHeader: const SizedBox(height: 20, child: Text('Pinned')),
-          collapseWhenEmpty: true,
-          onReorderFinished: (value) => result = value,
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _Harness(
+            pinned: const [],
+            unpinned: const [_Item('u', 60)],
+            pinnedHeader: const SizedBox(height: 20, child: Text('Pinned')),
+            collapseWhenEmpty: true,
+            onReorderFinished: (value) => result = value,
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      // The header has collapsed away, so the grid begins with the item.
-      expect(tester.getTopLeft(find.text('u')).dy, moreOrLessEquals(0, epsilon: 0.5));
+        // The header has collapsed away, so the grid begins with the item.
+        expect(
+          tester.getTopLeft(find.text('u')).dy,
+          moreOrLessEquals(0, epsilon: 0.5),
+        );
 
-      // Drag upward past the top: the pinned section re-expands as a drop zone.
-      final from = tester.getCenter(find.text('u'));
-      await dragItem(tester, from, from - const Offset(0, 40));
+        // Drag upward past the top: the pinned section re-expands as a drop zone.
+        final from = tester.getCenter(find.text('u'));
+        await dragItem(tester, from, from - const Offset(0, 40));
 
-      expect(result, isNotNull);
-      expect(result!.toSectionId, 'pinned');
-      expect(result!.toIndex, 0);
-    });
+        expect(result, isNotNull);
+        expect(result!.toSectionId, 'pinned');
+        expect(result!.toIndex, 0);
+      },
+    );
 
-    testWidgets('removing the dragged item mid-drag cancels the drag', (tester) async {
+    testWidgets('removing the dragged item mid-drag cancels the drag', (
+      tester,
+    ) async {
       final canceled = <String>[];
       GridReorderResult<_Item>? result;
 
@@ -291,7 +328,9 @@ void main() {
         ),
       );
 
-      final gesture = await tester.startGesture(tester.getCenter(find.text('a')));
+      final gesture = await tester.startGesture(
+        tester.getCenter(find.text('a')),
+      );
       await tester.pump(_dragDelay + const Duration(milliseconds: 50));
       await gesture.moveBy(const Offset(0, 30));
       await tester.pump();
@@ -315,30 +354,49 @@ void main() {
     });
   });
 
-  testWidgets('an item re-added before its exit fade finishes renders once, not as a ghost', (tester) async {
-    await tester.pumpWidget(const _Harness(pinned: [_Item('a', 60), _Item('b', 60)], unpinned: []));
-    await tester.pumpAndSettle();
-    expect(find.text('b'), findsOneWidget);
+  testWidgets(
+    'an item re-added before its exit fade finishes renders once, not as a ghost',
+    (tester) async {
+      await tester.pumpWidget(
+        const _Harness(pinned: [_Item('a', 60), _Item('b', 60)], unpinned: []),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('b'), findsOneWidget);
 
-    // Remove b, but only pump partway through its exit fade so it is still a
-    // live ghost.
-    await tester.pumpWidget(const _Harness(pinned: [_Item('a', 60)], unpinned: []));
-    await tester.pump(const Duration(milliseconds: 40));
-    expect(find.text('b'), findsOneWidget, reason: 'still fading out');
+      // Remove b, but only pump partway through its exit fade so it is still a
+      // live ghost.
+      await tester.pumpWidget(
+        const _Harness(pinned: [_Item('a', 60)], unpinned: []),
+      );
+      await tester.pump(const Duration(milliseconds: 40));
+      expect(find.text('b'), findsOneWidget, reason: 'still fading out');
 
-    // Bring b back before the fade completes.
-    await tester.pumpWidget(const _Harness(pinned: [_Item('a', 60), _Item('b', 60)], unpinned: []));
-    await tester.pump();
+      // Bring b back before the fade completes.
+      await tester.pumpWidget(
+        const _Harness(pinned: [_Item('a', 60), _Item('b', 60)], unpinned: []),
+      );
+      await tester.pump();
 
-    // Exactly one b — the revived live tile, not a ghost plus a live copy.
-    expect(find.text('b'), findsOneWidget, reason: 'the ghost was cancelled, not left alongside the live tile');
+      // Exactly one b — the revived live tile, not a ghost plus a live copy.
+      expect(
+        find.text('b'),
+        findsOneWidget,
+        reason: 'the ghost was cancelled, not left alongside the live tile',
+      );
 
-    // And it settles fully opaque rather than fading to nothing.
-    await tester.pumpAndSettle();
-    expect(find.text('b'), findsOneWidget);
-    final opacity = tester.widgetList<Opacity>(find.ancestor(of: find.text('b'), matching: find.byType(Opacity)));
-    for (final o in opacity) {
-      expect(o.opacity, greaterThan(0.99), reason: 'the revived tile is opaque, not mid-exit');
-    }
-  });
+      // And it settles fully opaque rather than fading to nothing.
+      await tester.pumpAndSettle();
+      expect(find.text('b'), findsOneWidget);
+      final opacity = tester.widgetList<Opacity>(
+        find.ancestor(of: find.text('b'), matching: find.byType(Opacity)),
+      );
+      for (final o in opacity) {
+        expect(
+          o.opacity,
+          greaterThan(0.99),
+          reason: 'the revived tile is opaque, not mid-exit',
+        );
+      }
+    },
+  );
 }

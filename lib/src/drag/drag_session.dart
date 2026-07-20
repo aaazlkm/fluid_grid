@@ -52,7 +52,11 @@ class DragSession<T> {
 
 /// Bridges the gesture recognizer's [Drag] contract to plain callbacks.
 class GridDrag extends Drag {
-  GridDrag({required this.onUpdate, required this.onEnd, required this.onCancel});
+  GridDrag({
+    required this.onUpdate,
+    required this.onEnd,
+    required this.onCancel,
+  });
 
   final void Function(Offset globalPosition) onUpdate;
   final VoidCallback onEnd;

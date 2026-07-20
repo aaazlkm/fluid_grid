@@ -8,12 +8,17 @@ GridSectionSpec section(
   double headerHeight = 0,
   double footerHeight = 0,
   double emptyExtent = 0,
+  int leadingCells = 0,
 }) => GridSectionSpec(
   id: id,
-  items: [for (final (itemId, height) in items) GridItemSpec(id: itemId, height: height)],
+  items: [
+    for (final (itemId, height) in items)
+      GridItemSpec(id: itemId, height: height),
+  ],
   headerHeight: headerHeight,
   footerHeight: footerHeight,
   emptyExtent: emptyExtent,
+  leadingCells: leadingCells,
 );
 
 GridLayoutSpec spec(
@@ -57,8 +62,14 @@ void main() {
         ]),
       );
 
-      expect(result.itemRects['a'], const Rect.fromLTWH(16, 0, columnWidth, 100));
-      expect(result.itemRects['b'], const Rect.fromLTWH(16 + columnWidth + 8, 0, columnWidth, 50));
+      expect(
+        result.itemRects['a'],
+        const Rect.fromLTWH(16, 0, columnWidth, 100),
+      );
+      expect(
+        result.itemRects['b'],
+        const Rect.fromLTWH(16 + columnWidth + 8, 0, columnWidth, 50),
+      );
     });
 
     test('sends the next item to the shortest column', () {
@@ -198,7 +209,9 @@ void main() {
     test('keeps the shortest-column order independent of direction', () {
       final items = [('a', 100.0), ('b', 50.0), ('c', 30.0)];
       final ltr = computeMasonryLayout(spec([section('s', items)]));
-      final rtl = computeMasonryLayout(spec([section('s', items)], textDirection: TextDirection.rtl));
+      final rtl = computeMasonryLayout(
+        spec([section('s', items)], textDirection: TextDirection.rtl),
+      );
 
       expect(rtl.itemRects['c']!.top, ltr.itemRects['c']!.top);
       expect(rtl.totalHeight, ltr.totalHeight);
@@ -256,9 +269,13 @@ void main() {
       final two = solveAt(2);
       final blended = lerpGridLayoutResult(one, two, 0.5);
 
-      final expectedTop = (one.itemRects['c']!.top + two.itemRects['c']!.top) / 2;
+      final expectedTop =
+          (one.itemRects['c']!.top + two.itemRects['c']!.top) / 2;
       expect(blended.itemRects['c']!.top, moreOrLessEquals(expectedTop));
-      expect(blended.totalHeight, moreOrLessEquals((one.totalHeight + two.totalHeight) / 2));
+      expect(
+        blended.totalHeight,
+        moreOrLessEquals((one.totalHeight + two.totalHeight) / 2),
+      );
     });
 
     test('extrapolates past t = 1 for edge rubber-banding', () {
@@ -269,7 +286,10 @@ void main() {
       // Beyond the 'b' endpoint, continuing along the a->b direction.
       final ca = one.itemRects['a']!.width;
       final cb = two.itemRects['a']!.width;
-      expect(blended.itemRects['a']!.width, moreOrLessEquals(cb + (cb - ca) * 0.1));
+      expect(
+        blended.itemRects['a']!.width,
+        moreOrLessEquals(cb + (cb - ca) * 0.1),
+      );
     });
 
     test('lerps section header geometry', () {
@@ -284,7 +304,180 @@ void main() {
 
       expect(
         blended.sections['s']!.contentBottom,
-        moreOrLessEquals((one.sections['s']!.contentBottom + two.sections['s']!.contentBottom) / 2),
+        moreOrLessEquals(
+          (one.sections['s']!.contentBottom +
+                  two.sections['s']!.contentBottom) /
+              2,
+        ),
+      );
+    });
+  });
+
+  group('leadingCells', () {
+    List<(String, double)> uniform(int count, double height) => [
+      for (var i = 0; i < count; i++) ('i$i', height),
+    ];
+
+    test('normalizeLeadingCells reduces to [0, crossAxisCount)', () {
+      expect(normalizeLeadingCells(0, 3), 0);
+      expect(normalizeLeadingCells(2, 3), 2);
+      expect(normalizeLeadingCells(3, 3), 0);
+      expect(normalizeLeadingCells(7, 3), 1);
+      expect(normalizeLeadingCells(5, 0), 0);
+    });
+
+    test('the first item lands at column leadingCells, at the content top', () {
+      final result = computeMasonryLayout(
+        spec([
+          section('s', uniform(4, 40), leadingCells: 1),
+        ]),
+      );
+
+      // Column 0 is blocked: i0 starts at column 1, top 0.
+      expect(
+        result.itemRects['i0'],
+        const Rect.fromLTWH(16 + columnWidth + 8, 0, columnWidth, 40),
+      );
+      // i1 wraps to column 0 of the next row.
+      expect(
+        result.itemRects['i1'],
+        const Rect.fromLTWH(16, 48, columnWidth, 40),
+      );
+    });
+
+    test('a uniform grid shifts by exactly k cells with wrap-around', () {
+      // 3 columns wide enough for exact math: width 320, no padding/spacing.
+      GridLayoutSpec threeCols(int leadingCells) => GridLayoutSpec(
+        width: 300,
+        crossAxisCount: 3,
+        sections: [
+          GridSectionSpec(
+            id: 's',
+            items: [
+              for (var i = 0; i < 7; i++) GridItemSpec(id: 'i$i', height: 100),
+            ],
+            leadingCells: leadingCells,
+          ),
+        ],
+      );
+
+      final canonical = computeMasonryLayout(threeCols(0));
+      final shifted = computeMasonryLayout(threeCols(2));
+
+      for (var i = 0; i < 7; i++) {
+        final flat = i + 2;
+        expect(
+          shifted.itemRects['i$i'],
+          Rect.fromLTWH((flat % 3) * 100.0, (flat ~/ 3) * 100.0, 100, 100),
+          reason: 'item i$i occupies flat cell $flat',
+        );
+        // Equivalent phrasing: shifted rect of i == canonical rect of the
+        // item that canonically occupies cell i+k (when one exists).
+        if (i + 2 < 7) {
+          expect(shifted.itemRects['i$i'], canonical.itemRects['i${i + 2}']);
+        }
+      }
+      // 7 items + 2 blocked cells = 9 cells = 3 full rows.
+      expect(shifted.totalHeight, 300);
+      expect(canonical.totalHeight, 300);
+    });
+
+    test('whole-row offsets normalize away', () {
+      final canonical = computeMasonryLayout(
+        spec([
+          section('s', uniform(4, 40)),
+        ]),
+      );
+      final wholeRows = computeMasonryLayout(
+        spec([
+          section('s', uniform(4, 40), leadingCells: 4),
+        ]),
+      );
+      expect(wholeRows.itemRects, canonical.itemRects);
+    });
+
+    test(
+      'RTL: blocked cells occupy the reading-order start (the right edge)',
+      () {
+        final result = computeMasonryLayout(
+          spec([
+            section('s', uniform(2, 40), leadingCells: 1),
+          ], textDirection: TextDirection.rtl),
+        );
+
+        // Logical column 0 (rightmost in RTL) is blocked: i0 lands at logical
+        // column 1 = the LEFT column.
+        expect(result.itemRects['i0']!.left, 16);
+        expect(result.itemRects['i0']!.top, 0);
+        // i1 wraps to logical column 0 (right) of the next row.
+        expect(result.itemRects['i1']!.left, 216 - 16 - columnWidth);
+        expect(result.itemRects['i1']!.top, 48);
+      },
+    );
+
+    test(
+      'variable heights: blanks size to the first item, packing stays greedy',
+      () {
+        final result = computeMasonryLayout(
+          spec([
+            section('s', [('a', 100), ('b', 30), ('c', 30)], leadingCells: 1),
+          ]),
+        );
+
+        // a at column 1 (column 0 blocked at height 100).
+        expect(
+          result.itemRects['a'],
+          const Rect.fromLTWH(16 + columnWidth + 8, 0, columnWidth, 100),
+        );
+        // b: shortest column is the blocked col 0 (bottom 100) vs col 1 (108
+        // after spacing)... col 0 bottom 100 < col 1 bottom 100 -> tie goes to
+        // col 0: b starts below the phantom.
+        expect(
+          result.itemRects['b'],
+          const Rect.fromLTWH(16, 108, columnWidth, 30),
+        );
+      },
+    );
+
+    test('an empty section ignores leadingCells (emptyExtent wins)', () {
+      final withOffset = computeMasonryLayout(
+        spec([
+          section('empty', const [], emptyExtent: 64, leadingCells: 2),
+          section('s', uniform(2, 40)),
+        ]),
+      );
+      final without = computeMasonryLayout(
+        spec([
+          section('empty', const [], emptyExtent: 64),
+          section('s', uniform(2, 40)),
+        ]),
+      );
+      expect(withOffset.itemRects, without.itemRects);
+      expect(withOffset.totalHeight, without.totalHeight);
+    });
+
+    test('lerp blends layouts whose offsets differ', () {
+      final a = computeMasonryLayout(
+        spec([
+          section('s', uniform(4, 40)),
+        ]),
+      );
+      final b = computeMasonryLayout(
+        spec([
+          section('s', uniform(4, 40), leadingCells: 1),
+        ]),
+      );
+      final blended = lerpGridLayoutResult(a, b, 0.5);
+
+      expect(
+        blended.itemRects['i0']!.left,
+        moreOrLessEquals(
+          (a.itemRects['i0']!.left + b.itemRects['i0']!.left) / 2,
+        ),
+      );
+      expect(
+        blended.totalHeight,
+        moreOrLessEquals((a.totalHeight + b.totalHeight) / 2),
       );
     });
   });
