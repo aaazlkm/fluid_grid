@@ -12,6 +12,8 @@ dependencies:
     sdk: flutter
   fluid_grid:
     path: ../
+  photo_manager: ^3.10.0
+  photo_manager_image_provider: ^2.2.0
 
 dev_dependencies:
   flutter_test:

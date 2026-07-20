@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Reading the device photo library (photo_manager). READ_MEDIA_IMAGES is
+         Android 13+; READ_EXTERNAL_STORAGE covers 12 and below. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
     <application
         android:label="animated_reorderable_grid_example"
         android:name="${applicationName}"
